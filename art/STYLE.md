@@ -18,7 +18,9 @@ Every sprite has exactly two top-level layers, **in this order**:
 <g id="colour"> … flat tint planes laid over the silhouette … </g>
 ```
 - **`#silhouette`** carries the whole shape and must read on its own. It's what you see at night outside the lamp. Detail comes from **cut-out filigree**: holes for eyes, buttons, leaf veins, knots, window panes. Use `fill-rule="evenodd"` or separate hole paths filled with the background. Interior lines are **not allowed**.
-- **`#colour`** holds 1–4 flat tint planes that sit *inside* the silhouette, inset about 2–3 px from its edge, so an ink border always frames them. It's what the lamp "projects". It's shown only where light falls; the game fades it by light level.
+- **`#colour`** holds 1–4 flat tint planes that sit *inside* the silhouette. It's what the lamp "projects". It's shown only where light falls; the game fades it by light level.
+- **The silhouette dominates.** Colour planes cover roughly **35–65%** of the silhouette's area and leave generous areas of pure ink: shadow sides, limbs, hair, boots, the undersides of foliage. The colour is a *projected tint* on the puppet, not a fill with an outline. If the lit sprite reads like a coloured cartoon with a black outline, it's wrong.
+- **Visual target:** `art/studies/a-magic-lantern.svg` (the approved direction study). Render it with the harness and match its balance: black cut-paper shapes, sparse tint, amber lamp as the hero.
 - **Warm rim:** include the 1.5–2 px amber `#f2a94a` rim on the lamp-facing (right or upper-right) edge in the `#colour` layer, so it too appears only in light.
 - Fire and lamp flames are **light**, not puppets. Put them in `#colour` as well, plus a small ink wick or holder in `#silhouette`.
 

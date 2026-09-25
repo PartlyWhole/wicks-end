@@ -13,6 +13,7 @@ export const meta = {
 
 // ---------------------------------------------------------------- config
 // args: { assets: [{ id, brief, base? }], maxRounds?: 3, passAvg?: 8, passMin?: 7, harmonize?: true }
+// skipDraft: true continues iterating on existing files instead of drafting new ones
 // base: id of another asset in the same run whose rig/character this one must reuse (runs after it)
 const ROOT = '/Users/alan/DontStarveClone/wicks-end'
 const assets = (args && args.assets) || []
@@ -21,6 +22,7 @@ const MAX_ROUNDS = (args && args.maxRounds) || 3
 const PASS_AVG = (args && args.passAvg) || 8
 const PASS_MIN = (args && args.passMin) || 7
 const HARMONIZE = !(args && args.harmonize === false)
+const SKIP_DRAFT = !!(args && args.skipDraft) // continue from the files already in art/assets
 
 const RENDER = (id) => `cd ${ROOT} && node art/tools/render.mjs art/assets/${id}.svg`
 const SHEET = (id) => `${ROOT}/art/renders/${id}.sheet.png`
@@ -28,7 +30,8 @@ const COMMON = `Project: Wick's End, a gothic hand-inked survival game (repo ${R
 The style guide and scoring rubric are in ${ROOT}/art/STYLE.md. Read it fully before doing anything.
 The review harness is \`${RENDER('<id>')}\`. It prints a JSON report and writes a contact sheet PNG to art/renders/<id>.sheet.png.
 The sheet shows the animation frames, an onion-skin overlay, a greyscale and a solid silhouette, the sprite at game scale on day and night ground, and a large hero view.
-You MUST look at the rendered PNG with the Read tool. Judge what you see, not what you intended.`
+You MUST look at the rendered PNG with the Read tool. Judge what you see, not what you intended.
+Visual target for the whole set: ${ROOT}/art/studies/a-magic-lantern.svg. Render it once with the harness (\`node art/tools/render.mjs art/studies/a-magic-lantern.svg --no-gif\`) and compare against it.`
 
 const SCORES = {
   type: 'object',
@@ -123,7 +126,8 @@ Strengths to KEEP: ${(crit.strengths || []).join('; ') || '(none listed)'}
 Fixes to make, in priority order:
 ${crit.fixes.map((f, i) => `${i + 1}. ${f.issue} → ${f.fix}`).join('\n')}
 
-Apply the fixes. Render after each significant change and Read the sheet to confirm the fix is visible and nothing else regressed. Render at most 4 times.
+Apply the fixes. Render after each significant change and Read the sheet to confirm the fix is visible and nothing else regressed. Render at most 5 times.
+If the average score is below 7, don't nudge: make bold structural changes (redraw whole parts or the whole asset) to reach the visual target. Incremental tweaks have plateaued before.
 Edit in place; rewrite whole sections if that's cleaner.`,
     { label: `revise:${a.id}#${round}`, phase: phaseName, schema: AUTHOR_OUT },
   )
@@ -157,7 +161,7 @@ const runOne = (a) => {
     settled[a.id] = (async () => {
       const base = a.base && assets.find((b) => b.id === a.base)
       if (base) await runOne(base)
-      await author(a)
+      if (!SKIP_DRAFT) await author(a)
       return iterate(a, 1, MAX_ROUNDS, 'Critique & revise')
     })()
   }

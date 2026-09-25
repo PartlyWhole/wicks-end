@@ -27,9 +27,10 @@ const html = `<!doctype html><html><head><meta charset="utf-8"><title>Wick's End
   figure{margin:0;background:#1c1612;border:1px solid #6b5a44;border-radius:10px;overflow:hidden}
   figure>div{height:200px}
   .day{background:radial-gradient(#9aa556,#77843f)}
-  .night{background:radial-gradient(circle at 50% 70%,#6b5a2c 0%,#2a2414 45%,#05070d 80%)}
+  .night{background:#2a2340}
+  .night #colour{display:none}
   figcaption{padding:8px 12px;color:#b3a58a}
-</style></head><body><h1>Wick's End — SVG art (${files.length})</h1><main>${cards}</main></body></html>`;
+</style></head><body><h1>Wick's End — SVG art (${files.length}) · top: lit · bottom: unlit (night)</h1><main>${cards}</main></body></html>`;
 writeFileSync(resolve('art/gallery.html'), html);
 mkdirSync(resolve('art/renders'), { recursive: true });
 const browser = await puppeteer.launch({ executablePath: CHROME, headless: true });
