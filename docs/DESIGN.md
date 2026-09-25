@@ -34,7 +34,7 @@ You are **Silas Wick**, a lamplighter who followed a flicker too far into the wo
 ## 2. Scope (v1, single-player)
 
 **Included**
-- Procedurally generated island, ~200×200 tiles, with 6 biomes: Meadow, Pinewood, Plains, Rocklands, Marsh, Barrens.
+- Procedurally generated island, ~200×200 tiles, with 6 biomes: Meadow, Pinewood, Plains, Rocklands, Marsh, Hollow Glade (graveyard), connected by painted roads.
 - Day/dusk/night cycle (16 segments, 480 s per day), 4 seasons (Autumn 20, Winter 15, Spring 20, Summer 15 days; lengths can be shortened in settings).
 - Health/Hunger/Sanity, temperature (freezing/overheating), wetness from rain, darkness damage ("the Hush").
 - Gathering: trees (3 growth stages; chop, stump, dig), saplings, grass, berry bushes, carrots, flowers, reeds, boulders, flint.
@@ -45,9 +45,11 @@ You are **Silas Wick**, a lamplighter who followed a flicker too far into the wo
 - Combat: weapons, armor absorption, attack cooldowns, kiting, loot tables.
 - Sanity effects: visual distortion, shadow creatures, and sanity auras.
 - Minimap/world map with fog of war, examine text, a pause menu, autosave at dawn, and a death screen with stats.
-- Procedural audio (WebAudio): sfx, ambience, and threat cues.
+- Procedural audio (WebAudio): sfx, ambience, threat cues, and work/danger music.
+- **Frostmaw**, a mid-winter giant (telegraphed by roars and quakes) that hunts you and flattens structures; it drops a Frost Heart that keeps you cool in summer.
+- **Journal** (J): creatures, foods and items unlock when encountered and show their stats. It persists across lives.
 
-**Deferred (post-v1):** multiplayer, caves, bosses beyond a seasonal giant, farming 2.0, boats, multiple characters, controller support, and camera rotation.
+**Deferred (post-v1):** multiplayer, caves, more seasonal giants, farming 2.0, boats, multiple characters, controller support, and camera rotation.
 
 ---
 
@@ -183,25 +185,47 @@ Sim is headless, deterministic per seed, and fed only by commands. Adding multip
 
 ---
 
-## 4. Directory layout
+## 4. Directory layout (as built)
 
 ```
 wicks-end/
-  index.html
+  index.html                 page shell (canvas + DOM UI roots), Google Fonts
   src/
-    main.ts
-    engine/   ecs.ts events.ts rng.ts noise.ts spatial.ts scheduler.ts bt.ts math.ts
-    sim/      game.ts commands.ts actions.ts clock.ts spawn.ts save.ts
-              systems/ stats.ts temperature.ts weather.ts locomotion.ts ai.ts combat.ts
-                       fire.ts spoilage.ts growth.ts spawner.ts hounds.ts sanityfx.ts ...
-              worldgen/ worldgen.ts biomes.ts
-              brains/   *.ts
-    content/  tuning.ts items.ts prefabs.ts recipes.ts cookpot.ts strings.ts
-    render/   renderer.ts camera.ts ground.ts lighting.ts fx.ts ink.ts sprites/*.ts
-    ui/       hud.ts inventory.ts crafting.ts containers.ts tooltip.ts map.ts menus.ts style.css
-    audio/    audio.ts
-    input/    input.ts
-  tests/      *.test.ts
-  docs/       DESIGN.md PROGRESS.md
-  .github/workflows/deploy.yml
+    main.ts                  App: screens, fixed-step loop, autosave, post-FX, title backdrop
+    debug.ts                 dev-only console helpers (dbg.*), stripped from production
+    engine/                  content-agnostic building blocks
+      ecs.ts                 World: entity map + component index + spatial hash
+      spatial.ts             uniform-grid spatial hash (radius/rect/nearest queries)
+      scheduler.ts           min-heap of timed events (regrowth, growth, regen)
+      bt.ts                  behavior-tree combinators
+      events.ts rng.ts noise.ts math.ts
+    content/                 data only: the "mod" layer
+      tuning.ts              every number (KB-derived)
+      defs.ts                ItemDef / PrefabDef / Recipe types + registries
+      items.ts prefabs.ts recipes.ts cookpot.ts strings.ts
+    sim/                     headless, deterministic simulation (no DOM)
+      game.ts                Game: world, clock, systems, command queue, events
+      create.ts              newGame(), serialize()/deserialize()
+      commands.ts            Command union (the only input into the sim)
+      player.ts              command handling, player controller, crafting, inventory ops
+      actions.ts             ActionDef table + resolution (primary / alternate)
+      combat.ts              attacks, damage, armor, aggro, death & loot, giant slam
+      spawn.ts inventory.ts clock.ts light.ts tiles.ts types.ts
+      systems/               ai (brains + actor states), locomotion (steering/collision),
+                             stats (hunger/sanity/temp/wetness/Hush), fire, spoilage,
+                             weather, world (scheduler/spawners/cookers/traps), threats
+                             (hounds, Frostmaw, shadows, birds)
+      brains/                common behaviors + per-creature behavior trees
+      worldgen/              island mask → Voronoi biomes → roads → content & set pieces
+    render/                  Canvas 2D presentation (reads sim, never mutates)
+      renderer.ts            camera, culling, y-sort, lighting, weather, speech, placement ghost
+      ground.ts              per-chunk ground painting (warped borders, coast ink, roads)
+      ink.ts icons.ts fx.ts  hand-inked drawing helpers, item icons, particles
+      sprites/static.ts      cached world sprites; sprites/actors.ts animated creatures
+    ui/                      DOM UI: hud, inventory, crafting, journal, map, menus, tooltip
+    input/input.ts           keyboard/mouse → Commands, hover tooltips
+    audio/audio.ts           WebAudio synthesis: sfx, ambience, work/danger music
+  tests/                     vitest: engine + gameplay (headless sim)
+  docs/                      DESIGN.md, PROGRESS.md
+  .github/workflows/deploy.yml   test → build → GitHub Pages
 ```

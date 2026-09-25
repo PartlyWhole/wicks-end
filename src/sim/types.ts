@@ -88,7 +88,7 @@ export interface Entity extends BaseEntity {
   spawner?: { children: number[]; stock: number };
 
   cooker?: { result?: string; until?: number; ready?: boolean };
-  dryer?: { item?: string; until?: number; ready?: boolean };
+  dryer?: { item?: string; src?: string; until?: number; ready?: boolean };
   farm?: { crop?: string; plantedAt?: number; ready?: boolean };
   shaveable?: { woolAt: number };
   trap?: { set: boolean; caught?: string };

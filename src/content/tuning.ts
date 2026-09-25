@@ -81,8 +81,8 @@ export const T = {
   TORCH_RADIUS: 5,
   BURN_TIME_SMALL: 6,
   BURN_TIME_TREE: 20,
-  FIRE_SPREAD_RADIUS: 3,
-  FIRE_SPREAD_CHANCE: 0.25, // per second per neighbor
+  FIRE_SPREAD_RADIUS: 4.6,
+  FIRE_SPREAD_CHANCE: 0.18, // per second per neighbor
   SMOLDER_TIME: 12,
   WILDFIRE_CHANCE: 0.002, // per summer-day tick per candidate (tuned in fire system)
 

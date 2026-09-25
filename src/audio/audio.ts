@@ -13,6 +13,10 @@ export class Audio {
   private drone!: GainNode;
   private droneOsc: OscillatorNode[] = [];
   private nextAmbient = 0;
+  private nextBeat = 0;
+  private beat = 0;
+  private workUntil = 0;
+  private dangerUntil = 0;
   private nextCrackle = 0;
   volume = 0.7;
   private g: Game | null = null;
@@ -318,10 +322,52 @@ export class Audio {
     if (kind === 'dawn') [262, 330, 392, 523].forEach((f, i) => this.tone(o, 'sine', f, f, 0.8, 0.1, i * 0.25));
   }
 
+  /** Tiny sequencer: a plucky "work" tune while gathering by day, drums when something hunts you. */
+  private music(g: Game): void {
+    const ac = this.ac!;
+    const t = ac.currentTime;
+    const p = g.player;
+    const st = p.state?.name;
+    if (st === 'work' || st === 'pickup') this.workUntil = t + 5;
+    let hunted = false;
+    g.world.spatial.forEachInRadius(p.x, p.y, 16, (e) => {
+      if (e.combat?.target === p.id && e.health && e.health.cur > 0) hunted = true;
+    });
+    if (hunted) this.dangerUntil = t + 4;
+    if (t < this.nextBeat) return;
+    const danger = t < this.dangerUntil;
+    const work = !danger && t < this.workUntil && g.clock.phase === 'day';
+    if (!danger && !work) {
+      this.nextBeat = t + 0.25;
+      this.beat = 0;
+      return;
+    }
+    const step = danger ? 0.21 : 0.19;
+    this.nextBeat = t + step;
+    const o = this.out(undefined, undefined, 0.5);
+    if (!o) return;
+    const b = this.beat++;
+    if (danger) {
+      if (b % 4 === 0) this.tone(o, 'sine', 90, 40, 0.3, 0.55);
+      if (b % 4 === 2) this.burst(o, 180, 1, 0.12, 0.35, 0, 'lowpass');
+      if (b % 8 === 7) this.burst(o, 2400, 2, 0.05, 0.12);
+      if (b % 16 === 0) this.tone(o, 'sawtooth', 110, 104, 0.8, 0.08);
+    } else {
+      // jaunty plucked melody over a bouncing bass (A minor pentatonic)
+      const scale = [220, 262, 294, 330, 392, 440, 523];
+      const mel = [0, 2, 4, 2, 5, 4, 2, 1, 0, 2, 3, 4, 6, 4, 2, 0];
+      const n = mel[b % mel.length];
+      if (b % 2 === 0) this.tone(o, 'triangle', scale[n], scale[n] * 0.995, 0.16, 0.12);
+      if (b % 4 === 0) this.tone(o, 'triangle', b % 8 === 0 ? 110 : 82.4, 80, 0.2, 0.18);
+      if (b % 4 === 2) this.burst(o, 5000, 3, 0.03, 0.05);
+    }
+  }
+
   /** Continuous ambience; called every frame. */
   update(g: Game, dt: number): void {
     if (!this.ac) return;
     const t = this.ac.currentTime;
+    this.music(g);
     const c = g.clock;
     const p = g.player;
     const smooth = (node: GainNode, v: number) => node.gain.setTargetAtTime(v, t, 0.5);

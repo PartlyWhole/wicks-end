@@ -15,8 +15,7 @@ function handle(g: Game, id: number, ev: string): void {
     const [, pre, xs, ys] = ev.split('|');
     const x = +xs + g.rng.range(-3, 3);
     const y = +ys + g.rng.range(-3, 3);
-    if (!g.walkable(x, y)) return;
-    if (g.world.spatial.nearest(x, y, 0.8)) return void g.sched.add(g.time + T.DAY, 0, ev);
+    if (!g.walkable(x, y) || g.world.spatial.nearest(x, y, 0.8)) return void g.sched.add(g.time + T.DAY, 0, ev);
     spawn(g, pre, x, y);
     return;
   }
@@ -48,7 +47,7 @@ function handle(g: Game, id: number, ev: string): void {
       if (e.growable && e.growable.stage < 2) {
         e.growable.stage++;
         if (e.health) e.health.max = e.health.cur = [250, 400, 600][e.growable.stage];
-        e.spawner!.stock = maxStock(e);
+        e.spawner!.stock = Math.max(0, maxStock(e) - aliveChildren(g, e));
         if (e.growable.stage < 2) g.sched.add(g.time + T.SPIDER_DEN_GROW, id, 'dengrow');
       }
       return;
@@ -97,7 +96,7 @@ export function enterHome(g: Game, e: Entity): void {
   const home = g.world.get(e.home?.id);
   if (home?.spawner) {
     home.spawner.children = home.spawner.children.filter((c) => c !== e.id);
-    home.spawner.stock = Math.min(maxStock(home) + 2, home.spawner.stock + 1);
+    home.spawner.stock = Math.min(maxStock(home), home.spawner.stock + 1);
   }
   removeEntity(g, e);
 }
@@ -113,7 +112,7 @@ export const worldSystem: System = {
 
     // spawners near the player
     for (const e of g.world.query('spawner')) {
-      if (dist2(e.x, e.y, p.x, p.y) > R2) continue;
+      if (dist2(e.x, e.y, p.x, p.y) > R2 || isDead(e)) continue;
       const sp = e.spawner!;
       if (sp.stock <= 0) continue;
       const n = aliveChildren(g, e);

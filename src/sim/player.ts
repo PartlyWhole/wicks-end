@@ -166,11 +166,13 @@ function slotMax(g: Game, ref: SlotRef, id: string): number {
   return maxStack(id);
 }
 
-function slotAccepts(g: Game, ref: SlotRef, s: Stack): boolean {
+function slotAccepts(g: Game, p: Entity, ref: SlotRef, s: Stack): boolean {
   if (ref.where === 'equip') return ITEMS.get(s.id)?.equip?.slot === ref.slot;
+  if (ref.where === 'pack' && !p.inventory!.pack) return false;
   if (ref.where === 'container') {
     const c = g.world.get(ref.id);
-    if (c?.cooker) return !!ITEMS.get(s.id)?.cook && !c.cooker.until;
+    if (!c?.container || g.openContainer !== c.id) return false;
+    if (c.cooker) return !!ITEMS.get(s.id)?.cook && !c.cooker.until && !c.cooker.ready;
   }
   if (ref.where === 'pack' || ref.where === 'inv') return !(s.id === 'backpack' && ref.where === 'pack');
   return true;
@@ -186,7 +188,7 @@ function clickSlot(g: Game, p: Entity, ref: SlotRef, alt: boolean, split?: boole
   }
   if (ref.where === 'equip') {
     if (cur) {
-      if (slotAccepts(g, ref, cur)) equipFromCursor(g, p, ref.slot);
+      if (slotAccepts(g, p, ref, cur)) equipFromCursor(g, p, ref.slot);
     } else if (s) {
       unequip(g, p, ref.slot, true);
     }
@@ -203,7 +205,7 @@ function clickSlot(g: Game, p: Entity, ref: SlotRef, alt: boolean, split?: boole
       inv.cursor = s;
       slotSet(g, p, ref, null);
     }
-  } else if (!slotAccepts(g, ref, cur)) {
+  } else if (!slotAccepts(g, p, ref, cur)) {
     return;
   } else if (!s) {
     const max = slotMax(g, ref, cur.id);
@@ -434,8 +436,10 @@ export function handleCommand(g: Game, p: Entity, cmd: Command): void {
       if (p.inventory!.cursor && ITEMS.get(p.inventory!.cursor.id)?.deploy) returnCursor(g, p);
       return;
     case 'slot':
+      if (asleep) return;
       return clickSlot(g, p, cmd.ref, cmd.alt, cmd.split);
     case 'useSlot': {
+      if (asleep) return;
       const s = p.inventory!.slots[cmd.i];
       if (s) useStack(g, p, { where: 'inv', i: cmd.i }, s);
       return;
@@ -516,9 +520,11 @@ export function updatePlayer(g: Game, p: Entity, dt: number): void {
     else return;
   }
   if (st.until !== undefined && g.time >= st.until && st.name !== 'idle' && st.name !== 'walk') {
-    const doneAction = st.name === 'work' || st.name === 'pickup' || st.name === 'build' ? st.data?.action : null;
+    const done = st.name === 'work' || st.name === 'pickup' || st.name === 'build' ? (st.data as ActionData | undefined) : undefined;
     setState(g, p, 'idle');
-    if (doneAction && pl.pending) completeAction(g, p, doneAction);
+    // only complete if the player is still committed to the same action on the same target
+    const pend = pl.pending;
+    if (done?.action && pend && pend.action === done.action && pend.target === done.target && pend.x === done.x && pend.y === done.y) completeAction(g, p, done);
   }
 
   const speed = loco.walk * speedMult(g, p);
@@ -601,7 +607,7 @@ export function updatePlayer(g: Game, p: Entity, dt: number): void {
       return;
     }
     case 'build':
-      setState(g, p, 'build', 0.5, { action: 'build' });
+      setState(g, p, 'build', 0.5, { action: 'build', x: pend.x, y: pend.y } satisfies ActionData);
       return;
     case 'attack':
       if (target) startAttack(g, p, target);
@@ -613,25 +619,33 @@ export function updatePlayer(g: Game, p: Entity, dt: number): void {
       pl.pending = null;
       return;
     }
-    setState(g, p, action.state, action.time, { action: action.id, target: target.id });
+    setState(g, p, action.state, action.time, { action: action.id, target: target.id } satisfies ActionData);
   }
 }
 
-function completeAction(g: Game, p: Entity, actionId: string): void {
+/** What a timed action state was started for. */
+interface ActionData {
+  action: string;
+  target?: number;
+  x?: number;
+  y?: number;
+}
+
+function completeAction(g: Game, p: Entity, d: ActionData): void {
   const pl = p.player!;
-  const pend = pl.pending!;
-  if (actionId === 'build') {
-    build(g, p, pend.x!, pend.y!);
+  if (d.action === 'build') {
+    if (d.x !== undefined && d.y !== undefined) build(g, p, d.x, d.y);
     pl.pending = null;
     return;
   }
-  const target = g.world.get(pend.target);
-  const a = actionById(actionId);
+  const target = g.world.get(d.target);
+  const a = actionById(d.action);
   if (!a || !target) {
     pl.pending = null;
     return;
   }
-  if (!a.test({ g, actor: p, target, cursor: p.inventory!.cursor })) {
+  const reach = a.range + (prefab(target.prefab).radius ?? 0.3) + 0.8;
+  if (!a.test({ g, actor: p, target, cursor: p.inventory!.cursor }) || dist(p.x, p.y, target.x, target.y) > reach) {
     pl.pending = null;
     return;
   }

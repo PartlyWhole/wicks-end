@@ -120,7 +120,7 @@ const tools: ItemDef[] = [
   { id: 'earmuffs', name: 'Rabbit Earmuffs', stack: 1, time: 5 * D, equip: { slot: 'head', insulation: 60 }, desc: 'Sorry, rabbits.' },
   { id: 'tophat', name: 'Top Hat', stack: 1, time: 8 * D, equip: { slot: 'head', sanity: 3.33, waterproof: 0.2 }, desc: 'Dignity, restored.' },
   { id: 'shagcoat', name: 'Shag Coat', stack: 1, time: 10 * D, equip: { slot: 'body', insulation: 240, waterproof: 0.2 }, desc: 'I look like a beast. I feel warm.' },
-  { id: 'backpack', name: 'Backpack', stack: 1, equip: { slot: 'body' }, fuel: 90, tags: ['backpack'], desc: 'More pockets, more problems solved.' },
+  { id: 'backpack', name: 'Backpack', stack: 1, equip: { slot: 'body' }, tags: ['backpack'], desc: 'More pockets, more problems solved.' },
   { id: 'thermalstone', name: 'Thermal Stone', stack: 1, tags: ['heatrock'], desc: 'Holds warmth. Or cold. It is patient.' },
   { id: 'salve', name: 'Healing Salve', stack: 40, heal: 20, desc: 'Stings in a healing way.' },
   { id: 'strawroll', name: 'Straw Roll', stack: 10, fuel: 360, tags: ['bedroll'], desc: 'Sleep through the dark. Mostly.' },

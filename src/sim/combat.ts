@@ -2,7 +2,7 @@ import { ITEMS, hasTag, prefab } from '../content/defs';
 import { T } from '../content/tuning';
 import { dist } from '../engine/math';
 import type { Game } from './game';
-import { dropLoot, dropStack } from './spawn';
+import { dropLoot, dropStack, removeEntity } from './spawn';
 import { allSlots } from './inventory';
 import type { Entity, StateName } from './types';
 
@@ -105,7 +105,7 @@ function giantSlam(g: Game, e: Entity, target: Entity | undefined): void {
       dropLoot(g, def.hammerLoot, o.x, o.y);
       if (o.container) for (const st of o.container.slots) if (st) dropStack(g, st, o.x, o.y, 1.4);
       g.events.emit('fx', { kind: 'collapse', x: o.x, y: o.y });
-      g.world.remove(o);
+      removeEntity(g, o);
       continue;
     }
     if (o.health && !isDead(o)) damage(g, o, attackDamage(e) * (o.player ? 1 : 2), e);
@@ -203,6 +203,10 @@ export function kill(g: Game, e: Entity, cause: string, killer?: Entity): void {
     return;
   }
   dropLoot(g, def.loot, e.x, e.y);
+  for (const id of e.spawner?.children ?? []) {
+    const c = g.world.get(id);
+    if (c?.home) c.home.id = 0;
+  }
   if (e.container) for (const s of e.container.slots) if (s) dropStack(g, s, e.x, e.y, 1.5);
   if (killer?.player) {
     killer.player.stats.killed++;

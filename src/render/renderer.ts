@@ -311,6 +311,10 @@ export class Renderer {
       ctx.restore();
       if (f.t > 0.85 && f.t < 0.9) this.fx.emit('dust', f.x + f.dir * 3, f.y, 6, '#b8ab94', { z: 0.2 });
     }
+    // summer: drifting pollen motes in the heat
+    if (g.clock.season === 'summer' && g.clock.phase === 'day' && Math.random() < dt * 6) {
+      this.fx.emit('ember', this.cam.x + (Math.random() - 0.5) * hw * 2, this.cam.y + (Math.random() - 0.3) * hh * 2, 1, '#f6e39a', { z: Math.random() * 3, max: 3, vz: 0.15, g: 0 });
+    }
     this.fx.draw(ctx, this.toScreen, S);
 
     // ---- weather
@@ -390,7 +394,15 @@ export class Renderer {
         const wind = 0.02 + g.weather.precip * 0.05;
         skew = Math.sin(this.clockTime * 1.3 + e.id * 0.7) * wind;
       }
-      this.blitSprite(spr, sx, sy, skew);
+      if (e.burnable?.burning) {
+        // char as it burns
+        const total = (prefab(e.prefab).burnable?.time ?? 6) * 1.1;
+        const k = clamp(1 - ((e.burnable.until ?? g.time) - g.time) / total, 0, 1);
+        ctx.save();
+        ctx.filter = `brightness(${1 - 0.75 * k}) saturate(${1 - 0.8 * k})`;
+        this.blitSprite(spr, sx, sy, skew);
+        ctx.restore();
+      } else this.blitSprite(spr, sx, sy, skew);
       if (hover || flash) {
         ctx.save();
         ctx.globalCompositeOperation = 'lighter';

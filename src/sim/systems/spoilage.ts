@@ -14,6 +14,15 @@ function perish(s: Stack, dt: number, mult: number): boolean {
   return s.fresh <= 0;
 }
 
+type Packed = Stack & { contents?: (Stack | null)[] };
+
+/** Spoil the contents of a backpack stack that isn't currently worn. */
+function perishContents(s: Stack | null | undefined, dt: number, mult: number, worn: (Stack | null)[] | null): void {
+  const c = (s as Packed | null | undefined)?.contents;
+  if (!c || c === worn) return;
+  for (let i = 0; i < c.length; i++) if (c[i] && perish(c[i]!, dt, mult)) rotSlot(c, i);
+}
+
 function rotSlot(arr: (Stack | null)[], i: number): void {
   const s = arr[i]!;
   const to = ITEMS.get(s.id)?.spoilsTo ?? 'rot';
@@ -40,6 +49,8 @@ export const spoilageSystem: System = {
             changed = true;
           }
         }
+      for (const s of inv.slots) perishContents(s, dt, smult, inv.pack);
+      perishContents(inv.cursor, dt, smult, inv.pack);
       if (inv.cursor && perish(inv.cursor, dt, smult)) {
         inv.cursor = { id: 'rot', n: inv.cursor.n };
         changed = true;
@@ -76,12 +87,16 @@ export const spoilageSystem: System = {
     for (const e of g.world.query('container')) {
       const mult = hasTag(prefab(e.prefab), 'fridge') ? T.PERISH_ICEBOX : 1;
       const slots = e.container!.slots;
-      for (let i = 0; i < slots.length; i++) if (slots[i] && perish(slots[i]!, dt, smult * mult)) rotSlot(slots, i);
+      for (let i = 0; i < slots.length; i++) {
+        perishContents(slots[i], dt, smult * mult, null);
+        if (slots[i] && perish(slots[i]!, dt, smult * mult)) rotSlot(slots, i);
+      }
       // backpack contents stay with the stack; handled when equipped
     }
     // ground items
     for (const e of g.world.query('item')) {
       const s = e.item!;
+      perishContents(s, dt, smult * T.PERISH_GROUND, null);
       if (s.fresh === undefined) continue;
       if (perish(s, dt, smult * T.PERISH_GROUND)) {
         const to = ITEMS.get(s.id)?.spoilsTo ?? 'rot';

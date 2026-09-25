@@ -363,3 +363,104 @@ describe('long run & persistence', () => {
     expect(contents?.[1]?.id).toBe('flint');
   });
 });
+
+describe('regressions from code review', () => {
+  it('acting during the build animation does not crash or build at a bogus spot', () => {
+    const g = newGame('rg1');
+    const p = g.player;
+    clearAround(g, p);
+    giveItem(p.inventory!, makeStack('cutgrass', 3));
+    giveItem(p.inventory!, makeStack('log', 2));
+    const it = spawn(g, 'item', p.x - 3, p.y, { item: makeStack('flint', 1) });
+    g.queue({ t: 'craft', recipe: 'campfire' });
+    run(g, 0.1);
+    g.queue({ t: 'place', x: p.x + 1, y: p.y });
+    run(g, 0.2); // mid build
+    g.queue({ t: 'click', alt: false, target: it.id, x: it.x, y: it.y });
+    expect(() => run(g, 3)).not.toThrow();
+  });
+
+  it('switching targets mid-action does not complete on the far target', () => {
+    const g = newGame('rg2');
+    const p = g.player;
+    clearAround(g, p, 30);
+    const a = spawn(g, 'grass', p.x + 1.5, p.y);
+    const b = spawn(g, 'grass', p.x + 20, p.y);
+    g.queue({ t: 'click', alt: false, target: a.id, x: a.x, y: a.y });
+    run(g, 0.2);
+    g.queue({ t: 'click', alt: false, target: b.id, x: b.x, y: b.y });
+    run(g, 0.4);
+    expect(b.pickable!.ready).toBe(true);
+  });
+
+  it('a finished dish is never overwritten', () => {
+    const g = newGame('rg3');
+    const p = g.player;
+    clearAround(g, p);
+    const pot = spawn(g, 'cookpot', p.x + 1.5, p.y);
+    pot.cooker = { result: 'meatballs', ready: true };
+    giveItem(p.inventory!, makeStack('berries', 4));
+    g.queue({ t: 'slot', ref: { where: 'inv', i: 0 }, alt: false });
+    run(g, 0.1);
+    g.queue({ t: 'click', alt: false, target: pot.id, x: pot.x, y: pot.y });
+    run(g, 1);
+    expect(g.openContainer).toBeNull();
+    expect(pot.cooker.result).toBe('meatballs');
+  });
+
+  it('items are not deleted when dropped into a destroyed container', () => {
+    const g = newGame('rg4');
+    const p = g.player;
+    clearAround(g, p);
+    const chest = spawn(g, 'chest', p.x + 1.5, p.y);
+    g.openContainer = chest.id;
+    giveItem(p.inventory!, makeStack('log', 10));
+    g.queue({ t: 'slot', ref: { where: 'inv', i: 0 }, alt: false });
+    run(g, 0.1);
+    g.world.remove(chest);
+    g.queue({ t: 'slot', ref: { where: 'container', id: chest.id, i: 0 }, alt: false });
+    run(g, 0.1);
+    expect(p.inventory!.cursor?.n).toBe(10);
+  });
+
+  it('food inside a backpack in the inventory still spoils', () => {
+    const g = newGame('rg5');
+    const p = g.player;
+    const bp = makeStack('backpack') as any;
+    bp.contents = [makeStack('berries', 2), null];
+    giveItem(p.inventory!, bp);
+    run(g, 2);
+    const held = p.inventory!.slots.find((s) => s?.id === 'backpack') as any;
+    expect(held.contents[0].fresh).toBeLessThan(1);
+  });
+
+  it('cannot sleep in total darkness', async () => {
+    const g = newGame('rg6');
+    const p = g.player;
+    clearAround(g, p, 20);
+    g.time = T.DAY - 60;
+    run(g, 1);
+    const { trySleep } = await import('../src/sim/actions');
+    expect(trySleep(g, p, 'roll')).toBe(false);
+  });
+});
+
+describe('fire', () => {
+  it('spreads between nearby trees and leaves burnt trees', async () => {
+    const g = newGame('fire-spread');
+    const p = g.player;
+    clearAround(g, p, 30);
+    const a = spawn(g, 'pine_tree', p.x + 8, p.y, { growable: { stage: 1 } });
+    const b = spawn(g, 'pine_tree', p.x + 12, p.y, { growable: { stage: 1 } });
+    const { ignite } = await import('../src/sim/systems/fire');
+    ignite(g, a);
+    let spread = false;
+    for (let i = 0; i < 30 && !spread; i++) {
+      runSafe(g, 1);
+      spread = !!b.burnable?.burning || !g.world.has(b);
+    }
+    expect(spread).toBe(true);
+    runSafe(g, 40);
+    expect(g.world.spatial.inRadius(p.x + 10, p.y, 4, (e) => e.prefab === 'burnt_tree').length).toBeGreaterThan(0);
+  }, 60_000);
+});

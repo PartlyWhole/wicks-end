@@ -51,6 +51,7 @@ export class InventoryUI {
   private cursor: HTMLDivElement;
   private dirty = true;
   private lastRefresh = 0;
+  private lastKey = '';
   mouse = { x: 0, y: 0 };
 
   constructor(
@@ -135,12 +136,17 @@ export class InventoryUI {
       const c = g.world.get(g.openContainer);
       if (!c || Math.hypot(c.x - p.x, c.y - p.y) > 4.5 || c.cooker?.until) g.queue({ t: 'closeContainer' });
     }
-    if (time - this.lastRefresh > 0.5) this.dirty = true;
     this.updateCursor();
+    const inv = p.inventory!;
+    if (time - this.lastRefresh > 0.5) {
+      // periodic check for freshness/durability changes: rebuild only if something visible changed
+      this.lastRefresh = time;
+      const key = this.stateKey();
+      if (key !== this.lastKey) this.dirty = true;
+    }
     if (!this.dirty) return;
     this.dirty = false;
-    this.lastRefresh = time;
-    const inv = p.inventory!;
+    this.lastKey = this.stateKey();
     this.main.textContent = '';
     inv.slots.forEach((s, i) => this.slotEl(this.main, s, { where: 'inv', i }, i < 10 ? String((i + 1) % 10) : undefined));
     this.equip.textContent = '';
@@ -175,6 +181,23 @@ export class InventoryUI {
         this.container.appendChild(b);
       }
     } else this.container.style.display = 'none';
+  }
+
+  private stateKey(): string {
+    const g = this.g;
+    const inv = g.player.inventory!;
+    const k = (s: Stack | null) => (s ? `${s.id}:${s.n}:${s.fresh !== undefined ? Math.round(s.fresh * 20) : ''}:${s.dur !== undefined ? Math.round(s.dur * 100) : ''}` : '-');
+    const c = g.openContainer !== null ? g.world.get(g.openContainer) : undefined;
+    return [
+      ...inv.slots.map(k),
+      ...(inv.pack ?? []).map(k),
+      k(inv.equip.hand),
+      k(inv.equip.body),
+      k(inv.equip.head),
+      g.openContainer ?? '',
+      ...(c?.container?.slots.map(k) ?? []),
+      c?.cooker?.until ? 'cooking' : '',
+    ].join('|');
   }
 
   private updateCursor(): void {

@@ -7,6 +7,7 @@ import { dropLoot, dropStack, removeEntity, spawn, TREE_STAGES } from './spawn';
 import { giveItem, makeStack } from './inventory';
 import { ignite } from './systems/fire';
 import { resolveCook } from '../content/cookpot';
+import { lightAt } from './light';
 
 export interface Ctx {
   g: Game;
@@ -72,7 +73,8 @@ function finishWork(g: Game, target: Entity, actor: Entity): void {
   if (action === 'hammer') {
     dropLoot(g, def.hammerLoot, target.x, target.y);
     if (target.container) for (const s of target.container.slots) if (s) dropStack(g, s, target.x, target.y, 1.4);
-    if (target.dryer?.item) dropStack(g, makeStack(target.dryer.item), target.x, target.y);
+    const dr = target.dryer;
+    if (dr?.item) dropStack(g, makeStack(dr.ready || !dr.src ? dr.item : dr.src), target.x, target.y);
     if (g.openContainer === target.id) {
       g.openContainer = null;
       g.events.emit('openContainer', { id: null });
@@ -194,7 +196,7 @@ export const ACTIONS: Record<string, ActionDef> = {
     run: (c) => {
       const s = takeCursor(c);
       const d = ITEMS.get(s.id)!;
-      c.target!.dryer = { item: d.dried, until: c.g.time + (d.dryDays ?? 1) * T.DAY, ready: false };
+      c.target!.dryer = { item: d.dried, src: s.id, until: c.g.time + (d.dryDays ?? 1) * T.DAY, ready: false };
       c.g.sfx('pickup', c.target!.x, c.target!.y);
     },
   },
@@ -347,7 +349,7 @@ export const ACTIONS: Record<string, ActionDef> = {
     range: 1.3,
     time: 0.1,
     state: 'pickup',
-    test: ({ target, cursor }) => !cursor && !!target?.container && !target.cooker?.until,
+    test: ({ target, cursor }) => !cursor && !!target?.container && !target.cooker?.until && !target.cooker?.ready,
     run: ({ g, target }) => {
       g.openContainer = target!.id;
       g.events.emit('openContainer', { id: target!.id });
@@ -360,7 +362,7 @@ export const ACTIONS: Record<string, ActionDef> = {
     range: 1.3,
     time: 0.1,
     state: 'pickup',
-    test: ({ target, cursor }) => !!cursor && !!target?.container && !target.cooker?.until,
+    test: ({ target, cursor }) => !!cursor && !!target?.container && !target.cooker?.until && !target.cooker?.ready,
     run: ({ g, target }) => {
       g.openContainer = target!.id;
       g.events.emit('openContainer', { id: target!.id });
@@ -467,6 +469,10 @@ export function trySleep(g: Game, actor: Entity, kind: 'tent' | 'roll'): boolean
     g.say(actor, 'cantSleepHungry');
     return false;
   }
+  if (lightAt(g, actor.x, actor.y) < T.DARK_THRESHOLD * 2) {
+    g.say(actor, 'It\u2019s too dark to sleep. Something would find me.', true);
+    return false;
+  }
   let danger = false;
   g.world.spatial.forEachInRadius(actor.x, actor.y, 14, (o) => {
     if (o.combat?.target === actor.id || (hasTag(prefab(o.prefab), 'hostile') && !isDead(o) && !o.shadow)) danger = true;
@@ -512,7 +518,7 @@ export function verbFor(a: ActionDef, g: Game, actor: Entity, target?: Entity): 
 /** Start cooking in a Cook Pot: consumes its 4 ingredients. */
 export function startCooking(g: Game, pot: Entity): boolean {
   const slots = pot.container!.slots;
-  if (slots.some((s) => !s)) return false;
+  if (pot.cooker?.ready || pot.cooker?.until || slots.some((s) => !s)) return false;
   const ids = slots.map((s) => s!.id);
   const r = resolveCook(ids, () => g.rng.next());
   for (let i = 0; i < slots.length; i++) {

@@ -52,6 +52,10 @@ export function spawn(g: Game, id: string, x: number, y: number, extra?: Partial
 
 export function removeEntity(g: Game, e: Entity): void {
   g.world.remove(e);
+  if (g.openContainer === e.id) {
+    g.openContainer = null;
+    g.events.emit('openContainer', { id: null });
+  }
 }
 
 /** Drop a stack as a world item near (x,y), splitting into max-size stacks. */

@@ -142,7 +142,8 @@ const hog = selector<BrainCtx>(
     if (!food) return 'failure';
     if (dist(c.e.x, c.e.y, food.x, food.y) < 1) {
       stop(c);
-      removeEntity(c.g, food);
+      if (food.item!.n > 1) food.item!.n--;
+      else removeEntity(c.g, food);
       setState(c.g, c.e, 'eat', 0.8);
       c.g.sfx('eat', c.e.x, c.e.y);
       return 'running';
