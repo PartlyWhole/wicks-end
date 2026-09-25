@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" data-duration="1.2">
+  <defs>
+    <radialGradient id="glow" cx="50%" cy="60%" r="50%">
+      <stop offset="0" stop-color="#ffd25a" stop-opacity=".55"/>
+      <stop offset="1" stop-color="#f07a26" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <ellipse cx="128" cy="172" rx="96" ry="70" fill="url(#glow)">
+    <animate attributeName="rx" values="96;104;92;96" dur="1.2s" repeatCount="indefinite" calcMode="spline" keySplines=".4 0 .6 1;.4 0 .6 1;.4 0 .6 1"/>
+  </ellipse>
+  <!-- ground shadow & ash bed -->
+  <path d="M60 230 C80 218 176 216 198 229 C184 240 76 242 60 230Z" fill="#2a2320" stroke="#1a1410" stroke-width="4" stroke-linejoin="round"/>
+  <!-- logs -->
+  <g stroke="#1a1410" stroke-width="5" stroke-linejoin="round" stroke-linecap="round">
+    <path d="M70 224 L168 186 C176 184 180 194 173 198 L78 236 C68 238 63 228 70 224Z" fill="#5a3d27"/>
+    <path d="M186 224 L90 188 C82 186 78 196 85 199 L178 236 C188 238 194 228 186 224Z" fill="#7d5634"/>
+    <ellipse cx="171" cy="191" rx="6" ry="8" fill="#c9a26a" stroke-width="3"/>
+    <ellipse cx="86" cy="193" rx="6" ry="8" fill="#c9a26a" stroke-width="3"/>
+  </g>
+  <g stroke="#1a1410" stroke-width="2" opacity=".55" stroke-linecap="round" fill="none">
+    <path d="M120 214 l14 -5 M112 219 l14 -5 M104 224 l12 -5"/>
+    <path d="M150 214 l-12 -5 M158 219 l-12 -5"/>
+  </g>
+  <!-- flames: three layers, each with its own flicker cycle -->
+  <g stroke="#1a1410" stroke-width="5" stroke-linejoin="round">
+    <path fill="#c2381e">
+      <animate attributeName="d" dur="1.2s" repeatCount="indefinite" calcMode="spline" keySplines=".45 0 .55 1;.45 0 .55 1;.45 0 .55 1"
+        values="M90 206 C82 170 106 150 112 118 C120 142 128 128 132 96 C146 128 170 150 166 206 Z;
+                M92 206 C80 166 112 150 108 110 C124 136 134 124 140 92 C150 126 172 156 164 206 Z;
+                M90 206 C84 172 104 146 118 120 C122 140 132 130 128 100 C148 132 168 152 166 206 Z;
+                M90 206 C82 170 106 150 112 118 C120 142 128 128 132 96 C146 128 170 150 166 206 Z"/>
+    </path>
+    <path fill="#f07a26" stroke-width="3">
+      <animate attributeName="d" dur="0.8s" repeatCount="indefinite" calcMode="spline" keySplines=".45 0 .55 1;.45 0 .55 1"
+        values="M104 204 C98 178 116 164 122 138 C128 156 136 148 138 126 C150 152 160 170 154 204 Z;
+                M104 204 C100 174 118 160 128 132 C134 152 140 146 144 130 C152 156 160 174 154 204 Z;
+                M104 204 C98 178 116 164 122 138 C128 156 136 148 138 126 C150 152 160 170 154 204 Z"/>
+    </path>
+    <path fill="#ffd25a" stroke="none">
+      <animate attributeName="d" dur="0.6s" repeatCount="indefinite" calcMode="spline" keySplines=".45 0 .55 1;.45 0 .55 1"
+        values="M116 202 C112 184 124 176 128 158 C134 176 144 184 140 202 Z;
+                M116 202 C114 180 126 172 132 154 C136 174 144 186 140 202 Z;
+                M116 202 C112 184 124 176 128 158 C134 176 144 184 140 202 Z"/>
+    </path>
+  </g>
+  <!-- embers rising -->
+  <g fill="#ffd25a">
+    <circle r="2.5" cx="0" cy="0">
+      <animateMotion dur="1.2s" repeatCount="indefinite" path="M120 150 C114 120 126 100 118 70"/>
+      <animate attributeName="opacity" values="1;0" dur="1.2s" repeatCount="indefinite"/>
+    </circle>
+    <circle r="2" cx="0" cy="0">
+      <animateMotion dur="1.2s" begin="-0.6s" repeatCount="indefinite" path="M142 146 C150 118 138 96 146 64"/>
+      <animate attributeName="opacity" values="1;0" dur="1.2s" begin="-0.6s" repeatCount="indefinite"/>
+    </circle>
+  </g>
+</svg>
