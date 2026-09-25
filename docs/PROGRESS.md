@@ -100,12 +100,21 @@ Each phase ends with a **verification gate**: tests green plus a manual or brows
 - ☑ Idle-time chunk prefetch (no hitches when walking)
 
 ## Phase 12 — Review & polish
-- ☐ Graphics review (readability, silhouettes, palette, lighting)
-- ☐ Gameplay review against design pillars (KB 08 checklist)
-- ☐ UI/UX review (feedback, discoverability, friction)
-- ☐ Balance pass (day 1–10 difficulty curve)
-- ☐ Performance profiling
-- ☐ Final deploy + smoke test on github.io
+- ☑ Graphics review: all structures/creatures reviewed in-browser; shadow creatures redrawn (were hound-like), roads repainted, burning trees char, summer pollen, title backdrop
+- ☑ Gameplay review against design pillars (KB 08 checklist): added Frostmaw + Journal; summer made dangerous; fire spread widened
+- ☑ UI/UX review: craft-tab glow for new recipes, responsive inventory, HUD hidden on title, stale-tooltip fixes, touch notice
+- ☑ Balance pass: DS-derived numbers (KB 01/04/05); Hush 100 dmg, hounds day 6–8, winter −6°/−18°, summer peak 78°
+- ☑ Performance: 60 fps, sim ≈0.05 ms/tick, chunk builds ≈25 ms moved to idle prefetch, 70 KB gz bundle
+- ☑ Independent code review (subagent): 8 bugs found and fixed with regression tests (34 tests total)
+- ☑ Final deploy + smoke test on github.io
+
+## Deferred / next ideas
+- Multiplayer (host-authoritative over WebRTC; sim is already command-driven and headless)
+- Caves & ruins, boats, more seasonal giants (spring/summer/autumn)
+- Additional playable characters with asymmetric perks
+- Hogfolk that help chop; bee boxes & honey (taffy); bird cage & eggs
+- Save compression (currently ~0.7 MB JSON in localStorage)
+- Gamepad support
 
 ---
 
@@ -116,5 +125,7 @@ Each phase ends with a **verification gate**: tests green plus a manual or brows
 | 2026-09-24 | Engine + full sim written (ECS, BT, scheduler, worldgen, actions, 9 systems, 8 brains, save/load). 22 headless tests green (incl. 10-day soak). |
 | 2026-09-24 | Phase 0 gate: deployed to https://partlywhole.github.io/wicks-end/ (Actions: tests → build → Pages). |
 | 2026-09-24 | Browser playtest round 1: fixed dark dawn (Hush at spawn!), stuck mobs (steering), stale UI refresh timer, blocky roads, hound-like shadow art, cookpot always glowing, summer too mild. |
+| 2026-09-24 | Code review subagent: fixed stale-action crash, item loss into destroyed containers, backpack-as-fuel deletion, dryer/cookpot exploits, backpack spoilage freeze, sleeping in darkness, spawner drift. |
+| 2026-09-24 | Responsive inventory, title backdrop, work/danger music, fire charring. Final deploy. |
 | 2026-09-24 | Design review vs KB 08 principles: added seasonal giant (late-game pressure, #7/#9), Journal (#16). 24 tests green. |
 | 2026-09-24 | Presentation layer written (ink sprites, icons, ground chunks, lighting, fx, DOM HUD/inventory/crafting/map/menus, WebAudio). Typecheck clean. Starting browser verification. |

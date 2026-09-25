@@ -1,4 +1,6 @@
 :root {
+  /* inventory slot size scales down so 18 slots always fit */
+  --slot: clamp(30px, calc((100vw - 150px) / 19.5), 52px);
   --ink: #1a1410;
   --paper: #e9dfc7;
   --paper-2: #d8cbad;
@@ -159,8 +161,9 @@ body {
   transform: translateX(-50%);
   display: flex;
   align-items: flex-end;
-  gap: 10px;
-  padding: 8px 12px;
+  gap: 8px;
+  padding: 6px 10px;
+  max-width: calc(100vw - 16px);
 }
 .slots {
   display: flex;
@@ -168,8 +171,8 @@ body {
 }
 .slot {
   position: relative;
-  width: 52px;
-  height: 52px;
+  width: var(--slot);
+  height: var(--slot);
   border-radius: 8px;
   background: radial-gradient(circle at 50% 40%, #4a3e32, #2b231c);
   border: 2px solid #5c4c3a;
@@ -182,8 +185,8 @@ body {
   border-color: var(--gold);
 }
 .slot img {
-  width: 44px;
-  height: 44px;
+  width: 85%;
+  height: 85%;
   pointer-events: none;
   image-rendering: auto;
 }
@@ -247,7 +250,7 @@ body {
 }
 #pack .slots {
   display: grid;
-  grid-template-columns: repeat(2, 52px);
+  grid-template-columns: repeat(2, var(--slot));
 }
 #container {
   position: absolute;
@@ -654,14 +657,6 @@ body {
 }
 
 @media (max-width: 900px) {
-  .slot {
-    width: 40px;
-    height: 40px;
-  }
-  .slot img {
-    width: 34px;
-    height: 34px;
-  }
   .badge {
     width: 46px;
     height: 46px;

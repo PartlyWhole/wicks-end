@@ -168,7 +168,7 @@ export class InventoryUI {
       this.container.appendChild(h);
       const grid = div('slots', this.container);
       const n = ce.container.slots.length;
-      grid.style.gridTemplateColumns = `repeat(${n === 4 ? 2 : 3}, 52px)`;
+      grid.style.gridTemplateColumns = `repeat(${n === 4 ? 2 : 3}, var(--slot))`;
       ce.container.slots.forEach((s, i) => this.slotEl(grid, s, { where: 'container', id: ce.id, i }));
       if (ce.cooker) {
         const b = document.createElement('button');
