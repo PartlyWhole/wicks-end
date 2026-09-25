@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" data-duration="2.4">
+  <!-- Baseline · Ink Storybook (the game's current look): coloured fills, ink outlines, hatching -->
+  <defs>
+    <radialGradient id="glow" cx="172" cy="150" r="96" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#ffb866" stop-opacity=".55"/>
+      <stop offset="1" stop-color="#ffb866" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="256" height="256" fill="#1c2420"/>
+  <path d="M0 212 C70 204 150 208 256 202 L256 256 L0 256Z" fill="#4f5a36" stroke="#1a1410" stroke-width="3"/>
+  <circle cx="172" cy="150" r="96" fill="url(#glow)"><animate attributeName="r" dur="0.8s" repeatCount="indefinite" values="96;102;94;96"/></circle>
+  <!-- pine, DS-style tiers -->
+  <g stroke="#1a1410" stroke-width="3.5" stroke-linejoin="round" transform="translate(40 0)">
+    <path d="M44 214 l4 -40 h8 l4 40z" fill="#5a3d27"/>
+    <path d="M14 180 L52 120 L90 180 C70 186 34 186 14 180Z" fill="#3e5a34"/>
+    <path d="M22 146 L52 90 L82 146 C64 152 40 152 22 146Z" fill="#39532f"/>
+    <path d="M30 112 L52 60 L74 112 C62 116 42 116 30 112Z" fill="#2f4a2c"/>
+    <g stroke-width="1.6" opacity=".55" fill="none"><path d="M62 168 l10 -8 M66 176 l12 -8 M60 136 l10 -8 M58 104 l8 -6"/></g>
+  </g>
+  <!-- Silas -->
+  <g stroke="#1a1410" stroke-width="3.5" stroke-linejoin="round" stroke-linecap="round">
+    <animateTransform attributeName="transform" type="translate" dur="2.4s" repeatCount="indefinite" calcMode="spline" keySplines=".45 0 .55 1;.45 0 .55 1" values="0 0;0 -1.5;0 0"/>
+    <path d="M142 212 l2 -32 M156 212 l-1 -32" fill="none" stroke="#2a2530" stroke-width="5"/>
+    <path d="M130 182 C132 150 136 130 144 120 L158 120 C166 130 168 150 170 182 C156 188 144 188 130 182Z" fill="#3b3548"/>
+    <circle cx="150" cy="102" r="17" fill="#ecdcc4"/>
+    <circle cx="154" cy="100" r="3" fill="#1a1410" stroke="none"/><circle cx="161" cy="100" r="2.6" fill="#1a1410" stroke="none"/>
+    <path d="M133 96 C135 80 163 78 167 94 L175 96 L135 100Z" fill="#4a3f36"/>
+    <path d="M140 118 C150 124 160 124 164 118" stroke="#c0563a" stroke-width="6" fill="none"/>
+    <path d="M160 130 C168 136 172 142 172 146" fill="none" stroke="#3b3548" stroke-width="6"/>
+  </g>
+  <path d="M166 146 h12 l-2 16 h-8z" fill="#c9a24a" stroke="#1a1410" stroke-width="3"/>
+  <path d="M169 149 h6 l-1 10 h-4z" fill="#fff0c8"/>
+  <!-- crawling dread at the edge -->
+  <g opacity=".85">
+    <path d="M212 214 C206 190 214 170 230 162 C248 166 256 190 256 214Z" fill="#05030a"/>
+    <path d="M214 212 l-12 -14 M252 212 l6 -16" stroke="#05030a" stroke-width="4" stroke-linecap="round"/>
+    <circle cx="228" cy="184" r="3" fill="#f4f0ff"/><circle cx="238" cy="182" r="2.4" fill="#f4f0ff"/>
+  </g>
+</svg>

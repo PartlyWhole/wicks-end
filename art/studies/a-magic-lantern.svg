@@ -1,0 +1,91 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" data-duration="2.4">
+  <!-- Direction A · Magic-Lantern Gothic: silhouettes gain colour only inside the lamp pool -->
+  <defs>
+    <radialGradient id="pool" cx="172" cy="150" r="120" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#fff0c8"/>
+      <stop offset=".22" stop-color="#f2a94a"/>
+      <stop offset=".55" stop-color="#b4574a"/>
+      <stop offset=".85" stop-color="#2a2340"/>
+      <stop offset="1" stop-color="#0b0907"/>
+    </radialGradient>
+    <clipPath id="lit"><circle cx="172" cy="150" r="104">
+      <animate attributeName="r" dur="2.4s" repeatCount="indefinite" calcMode="spline" keySplines=".4 0 .6 1;.4 0 .6 1;.4 0 .6 1;.4 0 .6 1" values="104;110;101;107;104"/>
+    </circle></clipPath>
+  </defs>
+  <rect width="256" height="256" fill="#0b0907"/>
+  <!-- the projected world: coloured ground only where the lamp reaches -->
+  <g clip-path="url(#lit)">
+    <rect width="256" height="256" fill="url(#pool)"/>
+    <path d="M0 214 C60 206 120 210 256 204 L256 256 L0 256Z" fill="#2a1a10" opacity=".55"/>
+  </g>
+  <!-- flicker: a warm veil pulsing on co-prime cycles -->
+  <circle cx="172" cy="150" r="70" fill="#fff0c8" opacity=".10">
+    <animate attributeName="opacity" dur="0.7s" repeatCount="indefinite" values=".10;.18;.08;.10"/>
+  </circle>
+  <circle cx="172" cy="150" r="46" fill="#fff0c8" opacity=".12">
+    <animate attributeName="opacity" dur="1.2s" repeatCount="indefinite" values=".12;.05;.16;.12"/>
+  </circle>
+
+  <!-- ground line with grass filigree -->
+  <path d="M0 216 C40 212 90 214 130 212 C170 210 210 214 256 210 L256 256 L0 256Z" fill="#0b0907"/>
+  <path d="M60 214 l3 -12 l3 12 M150 212 l2 -9 l3 9 M205 212 l3 -10 l2 10 M228 212 l2 -7 l2 7" stroke="#0b0907" stroke-width="3" fill="none" stroke-linecap="round"/>
+
+  <!-- gnarled tree: solid silhouette with cut-out holes -->
+  <g transform="translate(34 0)">
+  <g fill="#0b0907">
+    <path d="M52 216 C58 180 50 150 62 120 C48 104 26 96 18 80 C34 88 48 92 60 100 C56 80 40 62 44 40 C54 60 64 72 70 92 C74 66 90 50 108 44 C96 62 84 80 80 104 C92 96 108 94 122 98 C104 104 88 112 80 126 C76 156 82 186 90 216Z"/>
+  </g>
+  <g fill="#b4574a" opacity=".85">
+    <!-- filigree windows catch the lamp colour -->
+    <path d="M70 150 c4 -6 8 -6 10 0 c-3 5 -7 5 -10 0z"/>
+    <path d="M66 176 c3 -5 7 -5 9 0 c-3 4 -6 4 -9 0z"/>
+    <circle cx="74" cy="128" r="3"/>
+  </g>
+  <!-- warm rim on the lamp-facing edge -->
+  <path d="M80 126 C76 156 82 186 90 216" stroke="#f2a94a" stroke-width="2" fill="none" opacity=".8"/>
+  </g>
+
+  <!-- Silas: rigid-part silhouette puppet, breathing on 2s (stepped) -->
+  <g id="silas">
+    <animateTransform attributeName="transform" type="translate" dur="2.4s" repeatCount="indefinite" calcMode="discrete" values="0 0;0 -1;0 -2;0 -2;0 -1;0 0"/>
+    <g fill="#0b0907">
+      <!-- legs -->
+      <path d="M136 214 l4 -40 l6 0 l-2 40z M150 214 l0 -40 l6 0 l2 40z"/>
+      <!-- coat (tall, stiff, Gorey posture) -->
+      <path d="M128 178 C130 150 132 128 142 116 L160 116 C168 128 170 150 172 178 C160 184 140 184 128 178Z"/>
+      <!-- head and cap -->
+      <ellipse cx="151" cy="100" rx="15" ry="16"/>
+      <path d="M134 92 C136 78 164 76 168 90 L176 92 L136 96Z"/>
+      <!-- lantern arm -->
+      <path d="M162 126 C172 132 176 140 176 146 l-6 1 C168 140 162 136 158 132Z"/>
+    </g>
+    <!-- filigree: coat buttons & eye cut-outs catch light -->
+    <g fill="#f2a94a">
+      <circle cx="150" cy="136" r="1.8"/><circle cx="150" cy="148" r="1.8"/><circle cx="150" cy="160" r="1.8"/>
+      <circle cx="157" cy="100" r="2.2"/>
+    </g>
+    <!-- scarf: the one colour plane, lags a beat behind (follow-through) -->
+    <path fill="#b4574a" d="M140 114 C150 118 160 118 164 114 L164 120 C156 124 146 124 140 120Z"/>
+    <path fill="#b4574a" d="M142 118 C136 126 132 134 130 142 l6 0 C138 134 142 126 146 120Z">
+      <animateTransform attributeName="transform" type="rotate" dur="2.4s" repeatCount="indefinite" calcMode="discrete" values="0 144 118;3 144 118;5 144 118;4 144 118;2 144 118;0 144 118"/>
+    </path>
+    <path d="M160 116 C168 128 170 150 172 178" stroke="#f2a94a" stroke-width="2" fill="none"/>
+  </g>
+  <!-- lantern -->
+  <g>
+    <path d="M168 146 h12 l-2 18 h-8z" fill="#0b0907"/>
+    <path d="M170 150 h8 l-1 11 h-6z" fill="#fff0c8">
+      <animate attributeName="fill" dur="0.9s" repeatCount="indefinite" values="#fff0c8;#ffe09a;#fff6dc;#fff0c8"/>
+    </path>
+    <path d="M167 146 h14 M174 146 v-6" stroke="#0b0907" stroke-width="3"/>
+  </g>
+
+  <!-- shadow creature: a "wrong puppet" outside the pool; only its eyes exist; glides SMOOTHLY -->
+  <g>
+    <animateTransform attributeName="transform" type="translate" dur="2.4s" repeatCount="indefinite" calcMode="spline" keySplines=".5 0 .5 1;.5 0 .5 1" values="0 0;-6 -3;0 0"/>
+    <path d="M226 212 C220 186 228 160 244 150 C252 160 256 190 256 214Z" fill="#0b0907"/>
+    <path d="M232 150 L236 118 M242 150 L248 122" stroke="#0b0907" stroke-width="1.5"/>
+    <circle cx="236" cy="170" r="2.6" fill="#e8f0ff"/>
+    <circle cx="245" cy="168" r="2" fill="#e8f0ff"/>
+  </g>
+</svg>

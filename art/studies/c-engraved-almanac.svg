@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" data-duration="1.5">
+  <!-- Direction C · Engraved Almanac: carved from black; white cut-lines thicken toward the lamp -->
+  <defs>
+    <radialGradient id="cut" cx="172" cy="150" r="130" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#fff"/>
+      <stop offset=".5" stop-color="#999"/>
+      <stop offset="1" stop-color="#000"/>
+    </radialGradient>
+    <mask id="carve"><rect width="256" height="256" fill="url(#cut)"/></mask>
+    <!-- white-line engraving: horizontal cuts; the mask thins/erases them with distance from the lamp -->
+    <pattern id="lines" width="6" height="5" patternUnits="userSpaceOnUse">
+      <path d="M0 2.5 H6" stroke="#ece2c8" stroke-width="2.2"/>
+    </pattern>
+    <pattern id="vlines" width="4" height="6" patternUnits="userSpaceOnUse">
+      <path d="M2 0 V6" stroke="#ece2c8" stroke-width="1.4"/>
+    </pattern>
+  </defs>
+  <rect width="256" height="256" fill="#16120f"/>
+  <!-- sky & ground engraved with parallel cuts, visible only where lamplight reaches -->
+  <g mask="url(#carve)">
+    <rect width="256" height="210" fill="url(#lines)"/>
+    <path d="M0 212 C70 206 150 210 256 204 L256 256 L0 256Z" fill="url(#vlines)"/>
+  </g>
+  <!-- ground line: gouge-irregular -->
+  <path d="M0 212 C40 209 70 214 110 210 C150 207 190 213 256 206" stroke="#16120f" stroke-width="5" fill="none"/>
+
+  <!-- tree: black block with a few bold white gouges (Mignola spot-black) -->
+  <g transform="translate(30 0)">
+    <path d="M52 214 C58 180 50 150 62 120 C48 104 26 96 18 80 C34 88 48 92 60 100 C56 80 40 62 44 40 C54 60 64 72 70 92 C74 66 90 50 108 44 C96 62 84 80 80 104 C92 96 108 94 122 98 C104 104 88 112 80 126 C76 156 82 186 90 216Z" fill="#16120f"/>
+    <path d="M80 130 C77 158 82 186 88 212 M84 118 C94 108 104 104 116 101" stroke="#ece2c8" stroke-width="2.2" fill="none"/>
+    <path d="M74 150 l6 -3 M73 162 l7 -3 M75 174 l6 -3 M77 186 l6 -3" stroke="#ece2c8" stroke-width="1.6"/>
+  </g>
+
+  <!-- Silas: two-tone, hard shadow shape, off-register vermilion scarf -->
+  <g>
+    <animateTransform attributeName="transform" type="translate" dur="1.5s" repeatCount="indefinite" calcMode="discrete" values="0 0;0 -2;0 0"/>
+    <path d="M128 178 C130 150 132 128 142 116 L160 116 C168 128 170 150 172 178 C160 184 140 184 128 178Z" fill="#16120f"/>
+    <path d="M160 118 C167 130 169 150 171 176 L162 178 C162 154 158 132 152 120Z" fill="#ece2c8"/>
+    <path d="M161 124 l6 4 M162 136 l7 3 M163 148 l7 3 M164 160 l7 2" stroke="#16120f" stroke-width="1.3"/>
+    <path d="M136 214 l4 -38 l6 0 l-2 38z M150 214 l0 -38 l6 0 l2 38z" fill="#16120f"/>
+    <ellipse cx="151" cy="100" rx="15" ry="16" fill="#16120f"/>
+    <path d="M152 86 C162 88 167 98 164 110 C160 114 154 112 154 106 C156 98 156 92 152 86Z" fill="#ece2c8"/>
+    <circle cx="158" cy="101" r="1.8" fill="#16120f"/>
+    <path d="M134 92 C136 78 164 76 168 90 L176 92 L136 96Z" fill="#16120f"/>
+    <!-- tint block printed slightly off register -->
+    <path d="M142 116 C152 121 162 120 167 115 L166 122 C158 127 148 126 141 122Z" fill="#b5412c" transform="translate(1.5 -1)"/>
+    <path d="M162 126 C172 132 176 140 176 146 l-6 1 C168 140 162 136 158 132Z" fill="#16120f"/>
+  </g>
+  <!-- lantern: the only saturated accent -->
+  <path d="M168 146 h12 l-2 18 h-8z" fill="#16120f"/>
+  <path d="M170 150 h8 l-1 11 h-6z" fill="#f0a340">
+    <animate attributeName="fill" dur="1.5s" repeatCount="indefinite" calcMode="discrete" values="#f0a340;#d9a441;#f0a340"/>
+  </path>
+  <path d="M167 146 h14 M174 146 v-6" stroke="#16120f" stroke-width="3"/>
+
+  <!-- the Hush as UN-ENGRAVED block: a patch of pure uncut ink that eats the lines -->
+  <path fill="#16120f" d="M214 214 C208 180 214 150 232 136 C250 142 256 170 256 214Z">
+    <animate attributeName="d" dur="1.5s" repeatCount="indefinite" calcMode="discrete"
+      values="M214 214 C208 180 214 150 232 136 C250 142 256 170 256 214Z;M210 214 C206 178 216 146 234 134 C252 142 256 172 256 214Z;M214 214 C208 180 214 150 232 136 C250 142 256 170 256 214Z"/>
+  </path>
+  <circle cx="232" cy="166" r="2.4" fill="#e8f0ff"/>
+  <!-- chapbook caption -->
+  <text x="14" y="244" font-family="Georgia, serif" font-size="11" fill="#d6c7a1" letter-spacing="1">THE LAMPLIGHTER · FIG. III</text>
+</svg>

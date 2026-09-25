@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" data-duration="3">
+  <!-- Direction D · Caligari Nocturne: painted light lies, the lamp tells the truth; the set leans -->
+  <defs>
+    <radialGradient id="lamp" cx="172" cy="150" r="70" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#f3a64a" stop-opacity=".8"/>
+      <stop offset="1" stop-color="#f3a64a" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="256" height="256" fill="#120f14"/>
+  <!-- painted light shafts (flat decals) that point the wrong way -->
+  <path d="M0 0 L70 0 L150 256 L60 256Z" fill="#d8cfb0" opacity=".13"/>
+  <path d="M200 0 L256 0 L256 70Z" fill="#d8cfb0" opacity=".1"/>
+  <!-- zigzag ground, stage-flat -->
+  <path d="M0 214 L60 206 L110 216 L170 204 L256 212 L256 256 L0 256Z" fill="#1b1714"/>
+  <path d="M0 214 L60 206 L110 216 L170 204 L256 212" stroke="#d8cfb0" stroke-width="1.5" fill="none" opacity=".6"/>
+  <!-- painted shadow on the floor pointing TOWARD the lamp: wrong -->
+  <path d="M142 214 L196 206 L200 212 L150 218Z" fill="#a35c6a" opacity=".5"/>
+
+  <!-- leaning angular tree; skew breathes (sanity escalation) -->
+  <g>
+    <animateTransform attributeName="transform" type="skewX" dur="3s" repeatCount="indefinite" calcMode="spline" keySplines=".6 0 .4 1;.6 0 .4 1" values="-6;-12;-6"/>
+    <path d="M60 214 L66 150 L40 116 L64 130 L58 70 L76 124 L104 84 L84 140 L118 128 L86 156 L90 214Z" fill="#1b1714" stroke="#d8cfb0" stroke-width="1.5" stroke-linejoin="miter"/>
+    <path d="M70 170 L84 168 M68 186 L86 184" stroke="#d8cfb0" stroke-width="1" opacity=".6"/>
+  </g>
+
+  <!-- the one real light -->
+  <circle cx="172" cy="150" r="70" fill="url(#lamp)">
+    <animate attributeName="opacity" dur="0.7s" repeatCount="indefinite" values="1;.8;1"/>
+  </circle>
+
+  <!-- Silas: stiff, angular, Gorey-posture, single contour weight -->
+  <g stroke="#1b1714" stroke-width="2" stroke-linejoin="miter">
+    <path d="M140 214 L143 178 M154 214 L152 178" stroke-width="4"/>
+    <path d="M132 180 L138 120 L162 120 L168 180Z" fill="#efe6d2"/>
+    <path d="M150 124 L150 176" stroke-width="1"/>
+    <path d="M138 98 L150 84 L164 98 L160 116 L142 116Z" fill="#efe6d2"/>
+    <path d="M134 90 L166 84 L168 76 L140 78Z" fill="#1b1714"/>
+    <circle cx="156" cy="100" r="1.8" fill="#1b1714"/>
+    <path d="M162 128 L174 146" stroke-width="3"/>
+  </g>
+  <path d="M168 146 h12 l-2 18 h-8z" fill="#1b1714"/>
+  <path d="M170 150 h8 l-1 11 h-6z" fill="#f3a64a"/>
+
+  <!-- the Hush: a painted shadow that detaches from the scenery and slides -->
+  <path fill="#120f14" stroke="#5f8a82" stroke-width="1" d="M200 212 L214 150 L226 176 L238 140 L244 212Z">
+    <animateTransform attributeName="transform" type="translate" dur="3s" repeatCount="indefinite" calcMode="spline" keySplines=".6 0 .4 1;.6 0 .4 1" values="0 0;-10 0;0 0"/>
+  </path>
+  <circle cx="226" cy="168" r="2.2" fill="#5f8a82">
+    <animateTransform attributeName="transform" type="translate" dur="3s" repeatCount="indefinite" calcMode="spline" keySplines=".6 0 .4 1;.6 0 .4 1" values="0 0;-10 0;0 0"/>
+  </circle>
+</svg>
