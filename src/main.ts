@@ -101,8 +101,7 @@ class App {
       this.craft.setGame(g);
       this.map.setGame(g);
       this.journal.setGame(g);
-      this.input.setGame(g);
-      (this.input as any).r = this.r;
+      this.input.setGame(g, this.r);
     }
     this.audio.attach(g);
     g.events.on('newDay', ({ day }) => {
@@ -121,7 +120,8 @@ class App {
       setTimeout(() => this.onDeath(), 2500);
     });
     g.events.on('crafted', () => this.helpEl?.classList.add('hide'));
-    if (!loaded) {
+    if (loaded) this.helpEl?.remove();
+    else {
       this.toast('Day 1');
       setTimeout(() => g.say(g.player, 'firstDay'), 1200);
       this.showHelp();

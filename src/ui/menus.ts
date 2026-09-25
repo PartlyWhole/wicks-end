@@ -57,6 +57,7 @@ export class Menus {
     m.innerHTML = `
       <h1 class="flicker">Wick’s End</h1>
       <p>The lamps went out, and the Hollow woke up.</p>
+      ${matchMedia('(pointer: coarse)').matches ? '<p style="color:#e0806a;font-size:15px">Best played with a mouse and keyboard.</p>' : ''}
       ${this.h.hasSave() ? '<button class="btn" data-a="continue">Continue</button>' : ''}
       <button class="btn" data-a="new">New World</button>
       <details style="margin-top:12px;text-align:left;color:#b3a58a">

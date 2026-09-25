@@ -17,6 +17,8 @@ export class CraftingUI {
   private open: Tab | null = null;
   private selected: string | null = null;
   private lastKey = '';
+  /** recipes crafted at least once (dims the "new" glow) */
+  private made = new Set<string>(JSON.parse(localStorage.getItem('we.made') ?? '[]'));
 
   constructor(
     root: HTMLElement,
@@ -46,6 +48,7 @@ export class CraftingUI {
       this.tabs.appendChild(d);
       this.tabEls.set(t.id, d);
     }
+    this.watch();
     for (const el of [this.tabs, this.list]) {
       el.addEventListener('mousedown', (e) => e.stopPropagation());
       el.addEventListener('contextmenu', (e) => e.preventDefault());
@@ -55,6 +58,20 @@ export class CraftingUI {
   setGame(g: Game): void {
     this.g = g;
     this.lastKey = '';
+    this.watch();
+  }
+
+  private watch(): void {
+    this.g.events.on('crafted', ({ recipe }) => {
+      if (this.made.has(recipe)) return;
+      this.made.add(recipe);
+      try {
+        localStorage.setItem('we.made', JSON.stringify([...this.made]));
+      } catch {
+        /* ignore */
+      }
+      this.lastKey = '';
+    });
   }
 
   toggle(t: Tab | null): void {
@@ -86,9 +103,11 @@ export class CraftingUI {
     this.lastKey = key;
     // tab badges: prototypes available
     for (const t of TABS) {
-      const any = [...RECIPES.values()].some((r) => r.tab === t.id && this.status(r.id) === 'prototype');
+      const rs = [...RECIPES.values()].filter((r) => r.tab === t.id);
+      const proto = rs.some((r) => this.status(r.id) === 'prototype');
+      const fresh = rs.some((r) => this.status(r.id) === 'ok' && !this.made.has(r.id));
       const el = this.tabEls.get(t.id)!;
-      el.classList.toggle('has-proto', any);
+      el.classList.toggle('has-proto', proto || fresh);
       el.classList.toggle('active', this.open === t.id);
     }
     if (!this.open) {
@@ -105,7 +124,7 @@ export class CraftingUI {
     for (const r of recipes) {
       const st = this.status(r.id);
       const d = document.createElement('div');
-      d.className = `recipe ${st}${this.selected === r.id ? ' sel' : ''}`;
+      d.className = `recipe ${st}${this.selected === r.id ? ' sel' : ''}${st === 'ok' && !this.made.has(r.id) ? ' prototype' : ''}`;
       d.innerHTML = `<img src="${iconURL(recipeIcon(r))}">`;
       d.onmouseenter = () => this.tip.setUI(st === 'locked' ? `Needs ${TECH_NAMES[r.tech]}` : recipeName(r));
       d.onmouseleave = () => this.tip.setUI(null);

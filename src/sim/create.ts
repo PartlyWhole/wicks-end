@@ -98,6 +98,13 @@ export function deserialize(json: string): Game {
   Object.assign(g.hounds, d.hounds);
   if (d.giant) Object.assign(g.giant, d.giant);
   g.player = g.world.get(d.playerId)!;
+  // JSON breaks shared references: re-link the worn backpack's contents to the pack slots
+  const inv = g.player.inventory!;
+  const body = inv.equip.body as (import('./types').Stack & { contents?: (import('./types').Stack | null)[] }) | null;
+  if (body?.id === 'backpack') {
+    body.contents = inv.pack ?? body.contents ?? [];
+    inv.pack = body.contents;
+  }
   g.roads = d.roads ?? [];
   g.clock = computeClock(g.time, g.settings.seasonLengths);
   return g;

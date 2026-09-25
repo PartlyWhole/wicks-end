@@ -50,12 +50,13 @@ export class Input {
     });
     c.addEventListener('wheel', (e) => {
       e.preventDefault();
-      r.zoom(e.deltaY);
+      this.r.zoom(e.deltaY);
     }, { passive: false });
   }
 
-  setGame(g: Game): void {
+  setGame(g: Game, r: Renderer): void {
     this.g = g;
+    this.r = r;
     this.keys.clear();
     this.lastMove = '0,0';
   }
@@ -148,7 +149,7 @@ export class Input {
     const a = resolveAction(g, p, e, false);
     const alt = resolveAction(g, p, e, true);
     const name = e.item ? `${stackLabel(e.item)}${e.item.n > 1 ? ` ×${e.item.n}` : ''}` : PREFABS.get(e.prefab)!.name;
-    const main = a ? verbFor(a, g, p, e).replace(PREFABS.get(e.prefab)!.name, name).replace('Item', name) : name;
+    const main = a ? (e.item ? `${typeof a.verb === 'string' ? a.verb : verbFor(a, g, p)} ${name}` : verbFor(a, g, p, e)) : name;
     this.tip.setWorld(`${main}${alt ? `<div class="alt">Right-click: ${alt.verb}</div>` : ''}`);
   }
 }

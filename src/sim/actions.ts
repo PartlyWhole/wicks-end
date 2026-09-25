@@ -2,7 +2,7 @@ import { ITEMS, hasTag, item, prefab } from '../content/defs';
 import { T } from '../content/tuning';
 import type { Game } from './game';
 import type { Entity, StateName, Stack } from './types';
-import { addSanity, damage, isAlive, isDead, setState } from './combat';
+import { addSanity, isAlive, isDead, setState } from './combat';
 import { dropLoot, dropStack, removeEntity, spawn, TREE_STAGES } from './spawn';
 import { giveItem, makeStack } from './inventory';
 import { ignite } from './systems/fire';
@@ -530,4 +530,3 @@ export function startCooking(g: Game, pot: Entity): boolean {
   return true;
 }
 
-export { damage };

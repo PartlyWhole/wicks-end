@@ -13,6 +13,17 @@ function run(g: Game, seconds: number): void {
   const n = Math.round(seconds / DT);
   for (let i = 0; i < n; i++) g.tick(DT);
 }
+/** Run while keeping the player healthy (for long waits). */
+function runSafe(g: Game, seconds: number): void {
+  const p = g.player;
+  for (let t = 0; t < seconds; t += 5) {
+    p.health!.cur = p.health!.max;
+    p.hunger!.cur = p.hunger!.max;
+    p.sanity!.cur = p.sanity!.max;
+    p.temperature!.cur = 30;
+    run(g, 5);
+  }
+}
 function clearAround(g: Game, p: Entity, r = 12): void {
   for (const e of g.world.spatial.inRadius(p.x, p.y, r)) if (e !== p) g.world.remove(e);
 }
@@ -183,6 +194,40 @@ describe('survival', () => {
   });
 });
 
+describe('growing things', () => {
+  it('seeds planted in a garden plot grow into a crop', () => {
+    const g = newGame('farm');
+    const p = g.player;
+    clearAround(g, p);
+    const plot = spawn(g, 'farm_plot', p.x + 2, p.y);
+    giveItem(p.inventory!, makeStack('seeds', 1));
+    g.queue({ t: 'slot', ref: { where: 'inv', i: p.inventory!.slots.findIndex((s) => s?.id === 'seeds') }, alt: false });
+    run(g, 0.1);
+    g.queue({ t: 'click', alt: false, target: plot.id, x: plot.x, y: plot.y });
+    run(g, 2);
+    expect(plot.farm!.crop).toBeTruthy();
+    runSafe(g, T.FARM_GROW * 1.2);
+    expect(plot.farm!.ready).toBe(true);
+    g.queue({ t: 'click', alt: false, target: plot.id, x: plot.x, y: plot.y });
+    run(g, 2);
+    expect(plot.farm!.crop).toBeUndefined();
+  }, 60_000);
+
+  it('a planted pine cone grows into a tree', () => {
+    const g = newGame('cone');
+    const p = g.player;
+    clearAround(g, p);
+    giveItem(p.inventory!, makeStack('pinecone', 1));
+    g.queue({ t: 'slot', ref: { where: 'inv', i: p.inventory!.slots.findIndex((s) => s?.id === 'pinecone') }, alt: false });
+    run(g, 0.1);
+    g.queue({ t: 'click', alt: false, x: p.x + 2, y: p.y });
+    run(g, 2);
+    expect(g.world.spatial.inRadius(p.x, p.y, 4, (e) => e.prefab === 'pine_sapling').length).toBe(1);
+    runSafe(g, T.PINECONE_GROW + 5);
+    expect(g.world.spatial.inRadius(p.x, p.y, 4, (e) => e.prefab === 'pine_tree').length).toBe(1);
+  }, 60_000);
+});
+
 describe('cook pot', () => {
   it('matches recipes by tags and priority', () => {
     expect(resolveCook(['meat', 'berries', 'berries', 'berries']).id).toBe('meatballs');
@@ -298,5 +343,23 @@ describe('long run & persistence', () => {
     expect(countItem(g2.player.inventory!, 'log')).toBe(7);
     expect(g2.time).toBeCloseTo(g.time);
     run(g2, 5);
+  });
+
+  it('keeps backpack contents linked after load', () => {
+    const g = newGame('pack');
+    const p = g.player;
+    giveItem(p.inventory!, makeStack('backpack'));
+    g.queue({ t: 'useSlot', i: p.inventory!.slots.findIndex((s) => s?.id === 'backpack') });
+    run(g, 0.1);
+    p.inventory!.pack![0] = makeStack('gold', 3);
+    const g2 = deserialize(serialize(g));
+    const inv = g2.player.inventory!;
+    inv.pack![1] = makeStack('flint', 2);
+    g2.queue({ t: 'slot', ref: { where: 'equip', slot: 'body' }, alt: true });
+    run(g2, 0.1);
+    const bp = inv.slots.find((s) => s?.id === 'backpack');
+    const contents = (bp as any)?.contents;
+    expect(inv.pack).toBeNull();
+    expect(contents?.[1]?.id).toBe('flint');
   });
 });

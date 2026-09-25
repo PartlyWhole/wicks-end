@@ -1,4 +1,4 @@
-import { ITEMS, PREFABS, hasTag, prefab } from '../content/defs';
+import { PREFABS, hasTag, prefab } from '../content/defs';
 import { T } from '../content/tuning';
 import { clamp, lerp } from '../engine/math';
 import type { Game } from '../sim/game';
@@ -8,7 +8,7 @@ import { isFullMoon } from '../sim/light';
 import { canPlaceAt, placementPrefab, snapPlacement } from '../sim/player';
 import { GroundRenderer, CHUNK_UNITS } from './ground';
 import { Fx } from './fx';
-import { getSprite, staticSprite, PX, type Sprite } from './sprites/static';
+import { getSprite, staticSprite, type Sprite } from './sprites/static';
 import { drawActor } from './sprites/actors';
 import { iconCanvas } from './icons';
 
@@ -44,7 +44,7 @@ export class Renderer {
 
   constructor(
     readonly canvas: HTMLCanvasElement,
-    public g: Game,
+    readonly g: Game,
   ) {
     this.ctx = canvas.getContext('2d', { alpha: false })!;
     this.ground = new GroundRenderer(g);
@@ -128,17 +128,6 @@ export class Renderer {
         f.shake = 0.5;
         break;
     }
-  }
-
-  setGame(g: Game): void {
-    this.g = g;
-    this.ground.clear();
-    (this as any).ground = new GroundRenderer(g);
-    this.prev.clear();
-    this.speech = [];
-    this.cam.x = g.player.x;
-    this.cam.y = g.player.y;
-    this.bind();
   }
 
   resize(): void {
@@ -688,4 +677,3 @@ function hexA(hex: string, a: number): string {
   return `rgba(${(n >> 16) & 255},${(n >> 8) & 255},${n & 255},${a})`;
 }
 
-export { PX, ITEMS };

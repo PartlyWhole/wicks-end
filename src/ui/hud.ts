@@ -51,7 +51,7 @@ class Badge {
     parent.appendChild(this.root);
   }
 
-  set(cur: number, max: number, time: number): void {
+  set(cur: number, max: number): void {
     const f = Math.max(0, Math.min(1, cur / max));
     const top = 12 + (1 - f) * 76;
     this.rect.setAttribute('y', String(top));
@@ -70,7 +70,6 @@ class Badge {
     const big = Math.abs(rate) > (this.kind === 'hunger' ? 0.3 : 0.12);
     this.arrow.textContent = big ? (rate > 0 ? '▲' : '▼') : '';
     this.arrow.style.color = rate > 0 ? '#9fe07a' : '#f0705a';
-    void time;
   }
 }
 
@@ -126,9 +125,9 @@ export class Hud {
     this.moon.setAttribute('opacity', c.phase === 'night' ? (isFullMoon(c.day) ? '1' : String(0.25 + Math.abs(0.5 - moonPhase(c.day)) * 0)) : '0');
     const sName = c.season[0].toUpperCase() + c.season.slice(1);
     this.season.innerHTML = `${sName}<br><small>${c.seasonDaysLeft} day${c.seasonDaysLeft === 1 ? '' : 's'} left</small>`;
-    this.badges.health.set(p.health!.cur, p.health!.max, g.time);
-    this.badges.hunger.set(p.hunger!.cur, p.hunger!.max, g.time);
-    this.badges.sanity.set(p.sanity!.cur, p.sanity!.max, g.time);
+    this.badges.health.set(p.health!.cur, p.health!.max);
+    this.badges.hunger.set(p.hunger!.cur, p.hunger!.max);
+    this.badges.sanity.set(p.sanity!.cur, p.sanity!.max);
     const t = p.temperature!.cur;
     const show = t < 15 || t > 55 || (p.wetness?.cur ?? 0) > 15;
     this.temp.classList.toggle('show', show);

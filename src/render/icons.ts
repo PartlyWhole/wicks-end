@@ -5,7 +5,7 @@
 import { Rng, hashString } from '../engine/rng';
 import { INK, blob, blobPts, circle, inked, line, polyPath, shade, smoothPath, type Ctx, type Pt } from './ink';
 import { ITEMS } from '../content/defs';
-import { getSprite, staticSprite, PX } from './sprites/static';
+import { getSprite, staticSprite } from './sprites/static';
 
 const LW = 0.09;
 
@@ -586,7 +586,6 @@ export function iconCanvas(id: string, px = 64): HTMLCanvasElement {
     const h = spr.canvas.height;
     const k = (px * 0.92) / Math.max(w, h);
     ctx.drawImage(spr.canvas, (px - w * k) / 2, (px - h * k) / 2, w * k, h * k);
-    void PX;
   } else {
     ctx.translate(px / 2, px / 2);
     ctx.scale(px * 0.42, px * 0.42);

@@ -715,8 +715,6 @@ function portal(): SpriteDef {
 }
 
 // ------------------------------------------------------------------ registry
-export type StaticKeyFn = (e: import('../../sim/types').Entity, g: import('../../sim/game').Game) => string;
-
 export function staticSprite(key: string): SpriteDef | null {
   const [id, a, b] = key.split(':');
   const v = +(b ?? 0);
