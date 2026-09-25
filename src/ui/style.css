@@ -566,7 +566,10 @@ body {
 #title-bg {
   position: fixed;
   inset: 0;
-  background: radial-gradient(ellipse at 50% 60%, rgba(255, 150, 60, 0.18), transparent 55%), radial-gradient(ellipse at center, #1a1612 0%, #070605 70%);
+  background: radial-gradient(ellipse at center, rgba(10, 8, 6, 0.35) 0%, rgba(7, 6, 5, 0.9) 75%);
+}
+#title {
+  background: transparent;
 }
 .flicker {
   animation: flicker 3s infinite;

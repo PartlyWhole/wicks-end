@@ -3,6 +3,7 @@ import { T } from './content/tuning';
 import { PREFABS } from './content/defs';
 import type { Game } from './sim/game';
 import { newGame, serialize, deserialize } from './sim/create';
+import { spawn as spawnPrefab } from './sim/spawn';
 import { Renderer } from './render/renderer';
 import { Hud } from './ui/hud';
 import { InventoryUI } from './ui/inventory';
@@ -41,6 +42,8 @@ class App {
   private deathShown = false;
   private helpEl: HTMLDivElement | null = null;
   private toastTimer = 0;
+  /** a tiny live world rendered behind the title screen */
+  private backdrop: { g: Game; r: Renderer } | null = null;
 
   constructor() {
     this.menus = new Menus({
@@ -51,12 +54,16 @@ class App {
         this.save();
         this.menus.hideAll();
         this.g = null;
+        uiRoot.style.display = 'none';
         this.menus.showTitle();
       },
       setVolume: (v) => this.audio.setVolume(v),
       hasSave: () => !!localStorage.getItem(SAVE_KEY),
     });
-    window.addEventListener('resize', () => this.r?.resize());
+    window.addEventListener('resize', () => {
+      this.r?.resize();
+      this.backdrop?.r.resize();
+    });
     document.addEventListener('visibilitychange', () => {
       if (document.hidden && this.g && !this.g.over) {
         this.save();
@@ -65,7 +72,21 @@ class App {
     });
     window.addEventListener('beforeunload', () => this.save());
     this.menus.showTitle();
+    this.makeBackdrop();
     requestAnimationFrame(this.frame);
+  }
+
+  private makeBackdrop(): void {
+    const g = newGame('title-backdrop', {}, 48);
+    const p = g.player;
+    const fire = spawnPrefab(g, 'firepit', p.x + 2.2, p.y + 0.4);
+    fire.fueled!.fuel = T.FIREPIT_MAX * 0.6;
+    p.facing = 1;
+    g.time = T.DAY - 30; // deep night
+    this.backdrop = { g, r: new Renderer(canvas, g) };
+    this.backdrop.r.cam.view = 30;
+    this.backdrop.r.followOffset = 9.5;
+    uiRoot.style.display = 'none';
   }
 
   private continueGame(): void {
@@ -82,6 +103,7 @@ class App {
 
   start(g: Game, loaded = false): void {
     this.g = g;
+    canvas.style.filter = '';
     this.deathShown = false;
     this.acc = 0;
     this.r = new Renderer(canvas, g);
@@ -190,7 +212,21 @@ class App {
     this.last = now;
     const g = this.g;
     const r = this.r;
-    if (!g || !r) return;
+    if (!g || !r) {
+      const b = this.backdrop;
+      if (b) {
+        const st = b.g.player.state!;
+        st.name = 'idle';
+        b.g.time = T.DAY - 30;
+        b.g.player.sanity!.cur = b.g.player.sanity!.max;
+        b.g.player.health!.cur = b.g.player.health!.max;
+        b.g.player.hunger!.cur = b.g.player.hunger!.max;
+        b.r.snapshot();
+        b.g.tick(STEP);
+        b.r.render(1, dt);
+      }
+      return;
+    }
     const running = !this.menus.anyOpen() && !this.map.shown && !this.journal.shown;
     const asleep = g.player.state?.name === 'sleep';
     if (running) {

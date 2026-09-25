@@ -119,10 +119,7 @@ export class Menus {
       this.hideAll();
       this.h.newGame(Math.random().toString(36).slice(2, 8), 1);
     });
-    this.death.querySelector('[data-a=title]')!.addEventListener('click', () => {
-      this.hideAll();
-      this.showTitle();
-    });
+    this.death.querySelector('[data-a=title]')!.addEventListener('click', () => this.h.quitToTitle());
     this.death.classList.add('show');
   }
 

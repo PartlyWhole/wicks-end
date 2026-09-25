@@ -17,7 +17,7 @@ export function installSystems(g: Game): void {
   g.addSystems([actorSystem, aiSystem, locomotionSystem, statsSystem, fireSystem, spoilageSystem, weatherSystem, worldSystem, threatSystem]);
 }
 
-export function newGame(seed: string, settings?: Partial<GameSettings>, size = T.WORLD_TILES): Game {
+export function newGame(seed: string, settings?: Partial<GameSettings>, size: number = T.WORLD_TILES): Game {
   const g = new Game(seed, size, settings);
   installSystems(g);
   const { spawnX, spawnY } = generateWorld(g);

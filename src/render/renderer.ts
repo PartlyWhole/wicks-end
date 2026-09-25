@@ -40,6 +40,8 @@ export class Renderer {
   private visible: Entity[] = [];
   private clockTime = 0;
   hoverId: number | null = null;
+  /** camera looks this far above the player's feet */
+  followOffset = 1.5;
   mouseWorld: [number, number] | null = null;
 
   constructor(
@@ -250,7 +252,7 @@ export class Renderer {
     const [px, py] = this.pos(p, alpha);
     const k = 1 - Math.exp(-dt * 6);
     this.cam.x += (px - this.cam.x) * k;
-    this.cam.y += (py - 1.5 - this.cam.y) * k;
+    this.cam.y += (py - this.followOffset - this.cam.y) * k;
     this.scale = this.W / this.cam.view;
     const shake = this.fx.shake;
     const S = this.scale;
