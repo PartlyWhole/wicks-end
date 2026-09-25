@@ -126,7 +126,8 @@ export class InventoryUI {
     parent.appendChild(d);
   }
 
-  update(time: number): void {
+  update(): void {
+    const time = performance.now() / 1000;
     const g = this.g;
     const p = g.player;
     // auto-close container when walking away

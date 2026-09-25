@@ -201,6 +201,7 @@ function carveRoad(g: Game, x0: number, y0: number, x1: number, y1: number, rng:
   let x = x0;
   let y = y0;
   let ang = Math.atan2(y1 - y0, x1 - x0);
+  const pts: number[] = [x0 * T.TILE, y0 * T.TILE];
   for (let step = 0; step < 400; step++) {
     const want = Math.atan2(y1 - y, x1 - x);
     let da = want - ang;
@@ -213,8 +214,10 @@ function carveRoad(g: Game, x0: number, y0: number, x1: number, y1: number, rng:
     const t = g.tiles[i];
     if (t === TILE.OCEAN || t === TILE.SHALLOW) break;
     if (t !== TILE.MARSH) g.tiles[i] = TILE.ROAD;
+    pts.push(x * T.TILE, y * T.TILE);
     if (Math.hypot(x1 - x, y1 - y) < 2) break;
   }
+  if (pts.length > 4) g.roads.push(pts.map((v) => Math.round(v * 10) / 10));
 }
 
 function place(g: Game, pre: string, x: number, y: number, rng: Rng): void {

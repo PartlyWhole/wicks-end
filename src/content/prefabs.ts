@@ -206,7 +206,6 @@ const structures: PrefabDef[] = [
     components: { cooker: {} },
     structure: true,
     hammerLoot: [{ item: 'cutstone', n: 2 }, { item: 'charcoal', n: 3 }],
-    light: { radius: 2.4, intensity: 0.6, color: '#ffae5a' },
     examine: 'Four ingredients in, something delicious out. Hopefully.',
     mapColor: '#8a5a3a',
   },

@@ -35,7 +35,43 @@ export const locomotionSystem: System = {
   },
 };
 
+/**
+ * Move with collision. If an obstacle blocks most of the progress, try steering around it
+ * (rotating the step left/right), keeping the last successful side so entities circle trees smoothly.
+ */
 export function move(g: Game, e: Entity, mx: number, my: number): void {
+  const want = mx * mx + my * my;
+  let [nx, ny] = tryMove(g, e, mx, my);
+  const prog = (nx - e.x) * mx + (ny - e.y) * my;
+  if (want > 0 && prog < want * 0.35) {
+    const l = e.locomotor;
+    const first = l?.side ?? 1;
+    for (const ang of [0.7, 1.2, 1.6]) {
+      let done = false;
+      for (const s of [first, -first]) {
+        const c = Math.cos(ang * s);
+        const sn = Math.sin(ang * s);
+        const rx = mx * c - my * sn;
+        const ry = mx * sn + my * c;
+        const [tx, ty] = tryMove(g, e, rx, ry);
+        const p2 = (tx - e.x) * rx + (ty - e.y) * ry;
+        if (p2 > want * 0.5) {
+          nx = tx;
+          ny = ty;
+          if (l) l.side = s;
+          done = true;
+          break;
+        }
+      }
+      if (done) break;
+    }
+  }
+  e.x = nx;
+  e.y = ny;
+  g.world.moved(e);
+}
+
+function tryMove(g: Game, e: Entity, mx: number, my: number): [number, number] {
   const r = Math.max(radiusOf(e), 0.3);
   const flying = e.prefab === 'crow';
   let nx = e.x + mx;
@@ -72,9 +108,7 @@ export function move(g: Game, e: Entity, mx: number, my: number): void {
       }
     }
   }
-  e.x = nx;
-  e.y = ny;
-  g.world.moved(e);
+  return [nx, ny];
 }
 
 function walkableR(g: Game, x: number, y: number, r: number): boolean {

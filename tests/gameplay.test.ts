@@ -211,6 +211,19 @@ describe('combat', () => {
     expect(p.health!.cur).toBeGreaterThan(0);
   });
 
+  it('mobs steer around trees to reach their target', () => {
+    const g = newGame('steer');
+    const p = g.player;
+    clearAround(g, p, 25);
+    const tree = spawn(g, 'pine_tree', p.x - 3, p.y, { growable: { stage: 2 } });
+    const sp = spawn(g, 'spider_warrior', p.x - 6, p.y);
+    sp.combat!.target = p.id;
+    sp.combat!.aggroUntil = g.time + 99;
+    run(g, 4);
+    expect(Math.hypot(sp.x - p.x, sp.y - p.y)).toBeLessThan(3.5);
+    expect(g.world.has(tree)).toBe(true);
+  });
+
   it('armor absorbs damage', () => {
     const g = newGame('armor');
     const p = g.player;

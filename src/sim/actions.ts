@@ -520,6 +520,7 @@ export function startCooking(g: Game, pot: Entity): boolean {
     if (s.n <= 0) slots[i] = null;
   }
   pot.cooker = { result: r.id, until: g.time + r.time, ready: false };
+  g.world.set(pot, 'light', { radius: 2.6, intensity: 0.6, color: '#ffae5a' });
   if (g.openContainer === pot.id) {
     g.openContainer = null;
     g.events.emit('openContainer', { id: null });

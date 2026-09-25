@@ -202,7 +202,7 @@ class App {
     }
     r.render(running ? this.acc / STEP : 1, running ? dt : 0);
     this.hud.update(g);
-    this.inv.update(g.time);
+    this.inv.update();
     this.craft.update();
     this.audio.update(g, dt);
     this.postFx(g, r);
@@ -236,4 +236,8 @@ function scaled(k: number): Record<string, number> {
   return out;
 }
 
-(window as any).WE = new App();
+const app = new App();
+if (import.meta.env.DEV) {
+  (window as any).WE = app;
+  import('./debug').then((m) => m.installDebug(() => app.g, () => app.r?.cam ?? null));
+}

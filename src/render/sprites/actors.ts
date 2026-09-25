@@ -386,28 +386,41 @@ function hound(ctx: Ctx, e: Entity, p: ActorPose): void {
 
 function shadowCreature(ctx: Ctx, e: Entity, p: ActorPose, beak: boolean, solid: boolean): void {
   ctx.save();
-  ctx.globalAlpha = solid ? 0.85 : 0.35;
+  const flick = 0.75 + Math.sin(p.time * 13) * 0.08 + Math.sin(p.time * 5.3) * 0.07;
+  ctx.globalAlpha = (solid ? 0.9 : 0.28) * flick;
   const w = p.time * 3 + e.id;
-  const rng = new Rng(Math.floor(p.time * 6) + e.id);
-  ctx.fillStyle = '#07050a';
+  const rng = new Rng(Math.floor(p.time * 8) + e.id);
+  const ink = '#050308';
+  // smoky aura
+  ctx.fillStyle = 'rgba(60,20,80,0.25)';
+  smoothPath2(ctx, 0, beak ? -1.6 : -0.6, beak ? 1.2 : 1.6, beak ? 1.6 : 0.8, rng);
+  ctx.fill();
+  ctx.fillStyle = ink;
   if (!beak) {
-    // crawling dread: low, many limbs
-    for (let i = 0; i < 6; i++) {
-      const a = (i / 6) * Math.PI - Math.PI;
-      const len = 1.2 + Math.sin(w + i) * 0.2;
-      line(ctx, [[0, -0.6], [Math.cos(a) * len * 0.6, -0.6 + Math.sin(a) * 0.5], [Math.cos(a) * len, 0]], 0.14, '#07050a');
+    // crawling dread: a flat ink blot with many grasping limbs
+    for (let i = 0; i < 9; i++) {
+      const a = (i / 9) * Math.PI * 2 + Math.sin(w * 0.7 + i) * 0.2;
+      const len = 1.1 + Math.sin(w * 1.3 + i * 1.7) * 0.35;
+      const kx = Math.cos(a);
+      const ky = Math.sin(a) * 0.45;
+      line(ctx, [[0, -0.5], [kx * len * 0.55, -0.5 + ky * len * 0.6 - 0.35], [kx * len, -0.1 + ky * len]], 0.11 - (i % 3) * 0.02, ink);
     }
-    smoothPath2(ctx, 0, -0.8, 1.0, 0.55, rng);
+    smoothPath2(ctx, 0, -0.55, 0.95, 0.5, rng);
     ctx.fill();
-    circle(ctx, 0.4, -0.95, 0.09, '#f4f0ff', 0);
-    circle(ctx, 0.62, -0.9, 0.07, '#f4f0ff', 0);
+    // teeth-lined maw
+    ctx.fillStyle = '#e8e0ff';
+    for (let i = 0; i < 5; i++) polyPath(ctx, [[-0.35 + i * 0.15, -0.45], [-0.28 + i * 0.15, -0.3], [-0.21 + i * 0.15, -0.45]]), ctx.fill();
+    circle(ctx, 0.25, -0.8, 0.1, '#f4f0ff', 0);
+    circle(ctx, 0.5, -0.72, 0.07, '#f4f0ff', 0);
+    circle(ctx, -0.2, -0.82, 0.05, '#f4f0ff', 0);
   } else {
-    for (const x of [-0.25, 0.25]) line(ctx, [[x, -1.4], [x + Math.sin(w + x) * 0.2, 0]], 0.12, '#07050a');
-    smoothPath2(ctx, 0, -2.0, 0.55, 0.8, rng);
+    // dread beak: a tall wavering column with a long, cruel beak
+    for (const x of [-0.25, 0.25]) line(ctx, [[x, -1.4], [x + Math.sin(w + x) * 0.25, -0.7], [x * 1.6, 0]], 0.12, ink);
+    smoothPath2(ctx, 0, -2.1, 0.6, 0.95, rng);
     ctx.fill();
-    polyPath(ctx, [[0.2, -2.5], [1.5, -2.3 + Math.sin(w) * 0.1], [0.2, -2.1]]);
+    polyPath(ctx, [[0.25, -2.55], [1.7, -2.35 + Math.sin(w) * 0.12], [0.25, -2.15]]);
     ctx.fill();
-    circle(ctx, 0.15, -2.4, 0.09, '#f4f0ff', 0);
+    circle(ctx, 0.12, -2.45, 0.11, '#f4f0ff', 0);
   }
   ctx.restore();
 }

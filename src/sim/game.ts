@@ -68,6 +68,8 @@ export class Game {
   private acc = new Map<System, number>();
   private systems: System[] = [];
   openContainer: number | null = null;
+  /** road polylines in world units: [x0, y0, x1, y1, ...] */
+  roads: number[][] = [];
 
   constructor(
     readonly seed: string,

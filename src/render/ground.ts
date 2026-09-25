@@ -24,7 +24,14 @@ function rgb(hex: string): [number, number, number] {
 function warpedTile(g: Game, x: number, y: number, seed: number): number {
   const wx = x + (valueNoise(x / 3.1, y / 3.1, seed) - 0.5) * 4.2 + (valueNoise(x / 0.8, y / 0.8, seed + 5) - 0.5) * 1.1;
   const wy = y + (valueNoise(x / 3.1, y / 3.1, seed + 9) - 0.5) * 4.2 + (valueNoise(x / 0.8, y / 0.8, seed + 11) - 0.5) * 1.1;
-  return g.tileAt(wx, wy);
+  const t = g.tileAt(wx, wy);
+  if (t !== TILE.ROAD) return t;
+  // roads are painted as strokes; underneath, use a neighboring biome
+  for (const [dx, dy] of [[4, 0], [-4, 0], [0, 4], [0, -4], [4, 4], [-4, -4]]) {
+    const n = g.tileAt(wx + dx, wy + dy);
+    if (n !== TILE.ROAD) return n;
+  }
+  return TILE.PLAINS;
 }
 
 export class GroundRenderer {
@@ -129,8 +136,9 @@ export class GroundRenderer {
       for (let tx = 0; tx < CHUNK_TILES; tx++) {
         const gx = cx * CHUNK_TILES + tx;
         const gy = cy * CHUNK_TILES + ty;
-        const tile = g.tiles[gy * g.size + gx];
+        let tile = g.tiles[gy * g.size + gx];
         if (tile === undefined) continue;
+        if (tile === TILE.ROAD) tile = warpedTile(g, gx * T.TILE + 2, gy * T.TILE + 2, this.seed);
         const x0 = tx * T.TILE;
         const y0 = ty * T.TILE;
         const info = TILE_INFO[tile];
@@ -222,7 +230,52 @@ export class GroundRenderer {
           }
         }
       }
+    this.paintRoads(ctx, ox, oy);
     return c;
+  }
+
+  private paintRoads(ctx: CanvasRenderingContext2D, ox: number, oy: number): void {
+    const U = CHUNK_UNITS;
+    ctx.save();
+    ctx.translate(-ox, -oy);
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    for (const pts of this.g.roads) {
+      // skip polylines that don't touch this chunk
+      let hit = false;
+      for (let i = 0; i < pts.length && !hit; i += 2) hit = pts[i] > ox - 6 && pts[i] < ox + U + 6 && pts[i + 1] > oy - 6 && pts[i + 1] < oy + U + 6;
+      if (!hit) continue;
+      const path = () => {
+        ctx.beginPath();
+        ctx.moveTo(pts[0], pts[1]);
+        for (let i = 2; i < pts.length - 2; i += 2) ctx.quadraticCurveTo(pts[i], pts[i + 1], (pts[i] + pts[i + 2]) / 2, (pts[i + 1] + pts[i + 3]) / 2);
+        ctx.lineTo(pts[pts.length - 2], pts[pts.length - 1]);
+      };
+      path();
+      ctx.strokeStyle = 'rgba(60,48,34,0.55)';
+      ctx.lineWidth = 3.4;
+      ctx.stroke();
+      path();
+      ctx.strokeStyle = '#8a7658';
+      ctx.lineWidth = 2.8;
+      ctx.stroke();
+      path();
+      ctx.strokeStyle = 'rgba(160,140,110,0.35)';
+      ctx.lineWidth = 1.2;
+      ctx.stroke();
+      // pebbles
+      for (let i = 0; i < pts.length - 2; i += 2) {
+        const h = hash2(pts[i] * 10, pts[i + 1] * 10, 5);
+        if (h > 0.6) continue;
+        const px = pts[i] + (hash2(i, 1, 3) - 0.5) * 2;
+        const py = pts[i + 1] + (hash2(i, 2, 3) - 0.5) * 2;
+        ctx.fillStyle = '#5e5040';
+        ctx.beginPath();
+        ctx.ellipse(px, py, 0.18, 0.12, 0, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+    ctx.restore();
   }
 
   clear(): void {

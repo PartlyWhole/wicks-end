@@ -54,6 +54,8 @@ export interface Entity extends BaseEntity {
     vx: number;
     vy: number;
     dest?: { x: number; y: number } | null;
+    /** preferred steering side when circling obstacles */
+    side?: number;
   };
 
   combat?: {

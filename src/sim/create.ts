@@ -44,6 +44,7 @@ interface SaveData {
   hounds: Game['hounds'];
   idCounter: number;
   playerId: number;
+  roads: number[][];
 }
 
 function b64(u: Uint8Array): string {
@@ -74,6 +75,7 @@ export function serialize(g: Game): string {
     hounds: g.hounds,
     idCounter: g.world.idCounter,
     playerId: g.player.id,
+    roads: g.roads,
   };
   return JSON.stringify(data);
 }
@@ -93,6 +95,7 @@ export function deserialize(json: string): Game {
   Object.assign(g.weather, d.weather);
   Object.assign(g.hounds, d.hounds);
   g.player = g.world.get(d.playerId)!;
+  g.roads = d.roads ?? [];
   g.clock = computeClock(g.time, g.settings.seasonLengths);
   return g;
 }

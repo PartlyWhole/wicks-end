@@ -144,6 +144,7 @@ export const worldSystem: System = {
       if (ck.until && !ck.ready && g.time >= ck.until) {
         ck.ready = true;
         ck.until = undefined;
+        if (e.light) g.world.unset(e, 'light');
         g.sfx('cooked', e.x, e.y);
       }
     }
