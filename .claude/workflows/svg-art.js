@@ -12,7 +12,8 @@ export const meta = {
 }
 
 // ---------------------------------------------------------------- config
-// args: { assets: [{ id, brief }], maxRounds?: 3, passAvg?: 8, passMin?: 7, harmonize?: true }
+// args: { assets: [{ id, brief, base? }], maxRounds?: 3, passAvg?: 8, passMin?: 7, harmonize?: true }
+// base: id of another asset in the same run whose rig/character this one must reuse (runs after it)
 const ROOT = '/Users/alan/DontStarveClone/wicks-end'
 const assets = (args && args.assets) || []
 if (!assets.length) throw new Error('pass args.assets: [{ id: "campfire", brief: "..." }]')
@@ -82,7 +83,9 @@ const author = (a) =>
 
 Create the asset "${a.id}" at ${ROOT}/art/assets/${a.id}.svg.
 Brief: ${a.brief}
-
+${a.base ? `\nIMPORTANT: this is a new animation of an existing, already-approved puppet. Start by copying ${ROOT}/art/assets/${a.base}.svg.
+Reuse its parts, proportions, palette, filigree and joint structure EXACTLY: same character, same rig. Change only the poses and animation.
+Render ${a.base} too if you need to compare, so they look like the same puppet.\n` : ''}
 Work in a tight visual loop:
 1. Write the SVG following STYLE.md: 256×256 viewBox, feet at y≈232, ink outlines, hatching, palette, and a seamless looping animation if the brief implies motion.
 2. Run the harness and Read the sheet PNG.
@@ -147,11 +150,20 @@ async function iterate(a, startRound, maxRounds, phaseName) {
 log(`${assets.length} asset(s); pass = avg ≥ ${PASS_AVG} and every score ≥ ${PASS_MIN}; up to ${MAX_ROUNDS} critique rounds each`)
 
 // Per asset, independently: draft → critique/revise loop (no barrier; fast assets finish early)
-const results = await pipeline(
-  assets,
-  (a) => author(a),
-  (_draft, a) => iterate(a, 1, MAX_ROUNDS, 'Critique & revise'),
-)
+// Assets with a \`base\` (e.g. walk/chop built on the idle rig) start as soon as their base finishes.
+const settled = {}
+const runOne = (a) => {
+  if (!settled[a.id]) {
+    settled[a.id] = (async () => {
+      const base = a.base && assets.find((b) => b.id === a.base)
+      if (base) await runOne(base)
+      await author(a)
+      return iterate(a, 1, MAX_ROUNDS, 'Critique & revise')
+    })()
+  }
+  return settled[a.id]
+}
+const results = await parallel(assets.map((a) => () => runOne(a)))
 
 // Cross-asset consistency needs every sheet at once, so a barrier is justified here
 let harmonized = []

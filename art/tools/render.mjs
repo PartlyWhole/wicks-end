@@ -52,11 +52,14 @@ if (/<image|href="http|url\(http/.test(svgText)) warnings.push('external/raster 
 if (/<script/i.test(svgText)) warnings.push('contains <script>: not allowed in art assets');
 if (svgText.length > 40_000) warnings.push(`large file (${(svgText.length / 1024).toFixed(1)} KB): simplify paths`);
 const elements = (svgText.match(/<[a-zA-Z][\w:-]*/g) ?? []).length;
+const twoLayer = /id="silhouette"/.test(svgText) && /id="colour"/.test(svgText);
+if (!twoLayer) warnings.push('missing <g id="silhouette"> and/or <g id="colour"> (Magic-Lantern two-layer sprite)');
 
 const esc = (s) => s.replace(/&/g, '&amp;').replace(/"/g, '&quot;');
-const frame = (t, w, h, extra = '') =>
+const UNLIT = '#colour{display:none}';
+const frame = (t, w, h, extra = '', css = '') =>
   `<iframe data-t="${t}" style="width:${w}px;height:${h}px;border:0;background:transparent;${extra}" srcdoc="${esc(
-    `<!doctype html><html><body style="margin:0;background:transparent;overflow:hidden"><div style="width:${w}px;height:${h}px">${svgText.replace(
+    `<!doctype html><html><head><style>${css}</style></head><body style="margin:0;background:transparent;overflow:hidden"><div style="width:${w}px;height:${h}px">${svgText.replace(
       /<svg\b/,
       '<svg style="width:100%;height:100%;display:block"',
     )}</div></body></html>`,
@@ -75,13 +78,13 @@ const sheet = `<!doctype html><html><head><style>
 <h1>${name}.svg — ${animated ? `${N} frames over ${duration}s` : 'static'} · ${(svgText.length / 1024).toFixed(1)} KB · ${elements} elements</h1>
 <div class="row">${ts.map((t) => cell(`t=${t}s`, frame(t, 150, 150))).join('')}</div>
 <div class="row">
-  ${cell('onion skin (all frames)', `<div class="stack" style="width:220px;height:220px">${ts.map((t) => frame(t, 220, 220, `opacity:${Math.max(0.18, 1 / N + 0.1)}`)).join('')}</div>`)}
-  ${cell('silhouette (greyscale)', `<div style="filter:grayscale(1) contrast(1.4)">${frame(ts[0], 220, 220)}</div>`, '#8c8c8c')}
+  ${cell('onion skin (all frames, lit)', `<div class="stack" style="width:220px;height:220px">${ts.map((t) => frame(t, 220, 220, `opacity:${Math.max(0.18, 1 / N + 0.1)}`)).join('')}</div>`)}
+  ${cell('UNLIT · night outside the lamp', frame(ts[0], 220, 220, '', UNLIT), '#2a2340')}
   ${cell('solid silhouette', `<div style="filter:brightness(0)">${frame(ts[0], 220, 220)}</div>`, '#d8d0bc')}
-  ${cell('game scale · day', `<div style="width:220px;height:220px;display:flex;align-items:center;justify-content:center;gap:6px;background:radial-gradient(#9aa556,#77843f)">${frame(ts[0], 56, 56)}${frame(ts[Math.floor(N / 2)], 40, 40)}</div>`, '#8f9a4f')}
-  ${cell('game scale · night by firelight', `<div style="width:220px;height:220px;display:flex;align-items:center;justify-content:center;background:radial-gradient(circle at 50% 60%, #6b5a2c 0%, #2a2414 45%, #05070d 75%)">${frame(ts[0], 64, 64, 'filter:sepia(.5) brightness(.85)')}</div>`, '#05070d')}
+  ${cell('game scale · day (lit)', `<div style="width:220px;height:220px;display:flex;align-items:flex-end;justify-content:center;gap:6px;padding-bottom:70px;box-sizing:border-box;background:radial-gradient(#b8ae84,#7a7d55)">${frame(ts[0], 64, 64)}${frame(ts[Math.floor(N / 2)], 48, 48)}</div>`, '#7a7d55')}
+  ${cell('game scale · night: lit | unlit', `<div style="width:220px;height:220px;display:flex;align-items:center;justify-content:center;gap:14px;background:radial-gradient(circle at 30% 55%, #f2a94a 0%, #b4574a 22%, #2a2340 45%, #0b0907 80%)">${frame(ts[0], 64, 64)}${frame(ts[0], 64, 64, '', UNLIT)}</div>`, '#0b0907')}
 </div>
-<div class="row">${cell('hero (detail & line quality)', frame(ts[Math.min(1, N - 1)], 460, 460))}</div>
+<div class="row">${cell('hero · lit (detail & cut quality)', frame(ts[Math.min(1, N - 1)], 460, 460))}${cell('hero · unlit', frame(ts[Math.min(1, N - 1)], 300, 300, '', UNLIT), '#2a2340')}</div>
 </body></html>`;
 
 // ---------------------------------------------------------------- render
@@ -152,7 +155,7 @@ try {
     }
     rmSync(tmp, { recursive: true, force: true });
   }
-  const report = { file, sheet: sheetPath, gif: gifPath, animated, duration, frames: N, bytes: svgText.length, elements, warnings, errors };
+  const report = { file, twoLayer, sheet: sheetPath, gif: gifPath, animated, duration, frames: N, bytes: svgText.length, elements, warnings, errors };
   writeFileSync(join(outDir, `${name}.report.json`), JSON.stringify(report, null, 2));
   console.log(JSON.stringify(report, null, 2));
 } finally {
