@@ -230,4 +230,44 @@ const shadow = selector<BrainCtx>(
   action((c) => wander(c, c.e.x, c.e.y, 5)),
 );
 
-export const BRAINS: Record<string, Node<BrainCtx>> = { rabbit, bird, hog, shagbeast, spider, frog, hound, shadow };
+// ------------------------------------------------------------------ Frostmaw (winter giant)
+const giant = selector<BrainCtx>(
+  action((c) => {
+    // anything built right next to it gets flattened, even mid-chase
+    const s = findNear(c, 2.8, (o) => hasTag(prefab(o.prefab), 'structure') && !o.item);
+    if (!s || busy(c) || c.g.time < c.e.combat!.cooldownUntil) return 'failure';
+    c.e.combat!.cooldownUntil = c.g.time + c.e.combat!.period;
+    stop(c);
+    c.e.facing = s.x > c.e.x ? 1 : -1;
+    setState(c.g, c.e, 'attack', 0.9, { target: s.id, hit: false });
+    return 'running';
+  }),
+  fightTarget(35),
+  action((c) => {
+    // smash structures in its way: it comes for your base
+    const s = findNear(c, 3.5, (o) => hasTag(prefab(o.prefab), 'structure') && !o.item);
+    if (s) {
+      if (!busy(c) && c.g.time >= c.e.combat!.cooldownUntil) {
+        c.e.combat!.cooldownUntil = c.g.time + c.e.combat!.period;
+        setState(c.g, c.e, 'attack', 0.9, { target: s.id, hit: false, smash: true });
+        c.e.facing = s.x > c.e.x ? 1 : -1;
+      }
+      stop(c);
+      return 'running';
+    }
+    const p = findNear(c, 24, (o) => !!o.player && o.state?.name !== 'dead');
+    if (p) {
+      setTarget(c, p, 30);
+      return 'running';
+    }
+    const base = findNear(c, 30, (o) => hasTag(prefab(o.prefab), 'structure'));
+    if (base) {
+      moveTo(c, base.x, base.y, false);
+      return 'running';
+    }
+    return 'failure';
+  }),
+  action((c) => wander(c, c.e.x, c.e.y, 12)),
+);
+
+export const BRAINS: Record<string, Node<BrainCtx>> = { rabbit, bird, hog, shagbeast, spider, frog, hound, shadow, giant };

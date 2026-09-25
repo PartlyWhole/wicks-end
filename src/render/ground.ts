@@ -37,7 +37,7 @@ function warpedTile(g: Game, x: number, y: number, seed: number): number {
 export class GroundRenderer {
   private chunks = new Map<number, HTMLCanvasElement>();
   private order: number[] = [];
-  private readonly max = 30;
+  private readonly max = 36;
   private seed: number;
 
   constructor(private g: Game) {
@@ -46,6 +46,10 @@ export class GroundRenderer {
 
   private key(cx: number, cy: number): number {
     return cx * 4096 + cy;
+  }
+
+  has(cx: number, cy: number): boolean {
+    return this.chunks.has(this.key(cx, cy));
   }
 
   /** Get a chunk canvas, building at most `budget.n` new chunks per frame. */

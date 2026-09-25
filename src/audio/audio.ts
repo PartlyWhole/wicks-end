@@ -293,6 +293,18 @@ export class Audio {
       case 'sane':
         this.tone(d, 'sine', 440, 660, 0.8, 0.12);
         break;
+      case 'roar': {
+        const loud = Math.min(1, 0.35 + (param ?? 50) / 120);
+        const o = this.out(undefined, undefined, loud)!;
+        this.tone(o, 'sawtooth', 110, 38, 2.2, 0.45);
+        this.tone(o, 'square', 82, 30, 2.0, 0.2);
+        this.burst(o, 300, 0.8, 1.8, 0.35, 0, 'lowpass');
+        break;
+      }
+      case 'slam':
+        this.burst(d, 90, 0.7, 1.0, 0.9, 0, 'lowpass');
+        this.tone(d, 'sine', 60, 30, 0.6, 0.6);
+        break;
       case 'rain_start':
         break;
     }

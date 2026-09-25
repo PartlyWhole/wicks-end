@@ -524,6 +524,23 @@ const mobs: PrefabDef[] = [
   },
 ];
 
+const giants: PrefabDef[] = [
+  {
+    id: 'frostmaw',
+    name: 'Frostmaw',
+    tags: ['monster', 'hostile', 'giant', 'large'],
+    radius: 1.4,
+    size: 7,
+    hostile: true,
+    components: mob(2000, 75, 4, 3.4, 3, 3),
+    loot: [{ item: 'meat', n: 8 }, { item: 'frostheart' }],
+    sanityAura: -400,
+    brain: 'giant',
+    examine: 'It came down from the cold with a single, hungry eye.',
+    mapColor: '#dfe8ee',
+  },
+];
+
 const misc: PrefabDef[] = [
   { id: 'item', name: 'Item', size: 0.9 },
   {
@@ -538,4 +555,4 @@ const misc: PrefabDef[] = [
   },
 ];
 
-definePrefabs([...flora, ...minerals, ...structures, ...dens, ...mobs, ...misc]);
+definePrefabs([...flora, ...minerals, ...structures, ...dens, ...mobs, ...giants, ...misc]);

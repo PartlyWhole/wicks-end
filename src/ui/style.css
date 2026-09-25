@@ -668,3 +668,16 @@ body {
     height: 88px;
   }
 }
+
+#journal .recipe.locked::after {
+  content: '?';
+}
+.jt {
+  width: auto !important;
+  display: inline-block !important;
+  margin: 0 !important;
+  padding: 5px 16px !important;
+}
+.jt.on {
+  border-color: var(--gold);
+}

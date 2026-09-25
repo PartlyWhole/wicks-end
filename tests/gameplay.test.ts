@@ -240,6 +240,37 @@ describe('combat', () => {
   });
 });
 
+describe('seasonal giant', () => {
+  it('Frostmaw arrives mid-winter after warnings and smashes structures', () => {
+    const g = newGame('giant');
+    const p = g.player;
+    clearAround(g, p, 30);
+    const chest = spawn(g, 'chest', p.x + 2, p.y);
+    const says: string[] = [];
+    g.events.on('say', ({ text }) => says.push(text));
+    g.time = 26 * T.DAY + 20; // winter, ~40% through, daytime
+    let giant: Entity | undefined;
+    for (let i = 0; i < 90 && !giant; i++) {
+      p.health!.cur = p.health!.max;
+      p.temperature!.cur = 30;
+      run(g, 1);
+      giant = [...g.world.entities.values()].find((e) => e.prefab === 'frostmaw');
+    }
+    expect(giant).toBeDefined();
+    expect(says.length).toBeGreaterThan(1);
+    // a chest right in its path
+    g.world.remove(chest);
+    const mid = spawn(g, 'chest', (giant!.x + p.x) / 2, (giant!.y + p.y) / 2);
+    for (let i = 0; i < 60 && g.world.has(mid); i++) {
+      p.health!.cur = p.health!.max;
+      p.temperature!.cur = 30;
+      p.sanity!.cur = p.sanity!.max;
+      run(g, 1);
+    }
+    expect(g.world.has(mid)).toBe(false);
+  }, 60_000);
+});
+
 describe('long run & persistence', () => {
   it('survives 10 headless days without exceptions, entity count bounded', () => {
     const g = newGame('long');

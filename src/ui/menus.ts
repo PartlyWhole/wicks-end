@@ -30,6 +30,7 @@ const KEYS = `
   <kbd>1–0</kbd><span>Use inventory slot</span>
   <kbd>Shift+click</kbd><span>Split a stack</span>
   <kbd>M / Tab</kbd><span>Map</span>
+  <kbd>J</kbd><span>Journal (things you\u2019ve discovered)</span>
   <kbd>Wheel</kbd><span>Zoom</span>
   <kbd>Esc</kbd><span>Pause / close</span>
 </div>`;

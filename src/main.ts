@@ -13,6 +13,7 @@ import { Menus } from './ui/menus';
 import { Input } from './input/input';
 import { Audio } from './audio/audio';
 import { TIPS } from './content/strings';
+import { Journal } from './ui/journal';
 
 const SAVE_KEY = 'we.save.v1';
 const STEP = 1 / T.SIM_HZ;
@@ -31,6 +32,7 @@ class App {
   inv!: InventoryUI;
   craft!: CraftingUI;
   map!: MapUI;
+  journal!: Journal;
   input!: Input;
   audio = new Audio();
   menus: Menus;
@@ -87,8 +89,10 @@ class App {
       this.inv = new InventoryUI(uiRoot, g, this.tip);
       this.craft = new CraftingUI(uiRoot, g, this.tip, (id) => PREFABS.get(id)?.name ?? id);
       this.map = new MapUI(g);
+      this.journal = new Journal(g);
       this.input = new Input(g, this.r, this.tip, {
         toggleMap: () => this.map.toggle(),
+        toggleJournal: () => this.journal.toggle(),
         escape: () => this.escape(),
         isBlocked: () => this.menus.anyOpen() || !this.g,
       });
@@ -96,6 +100,7 @@ class App {
       this.inv.setGame(g);
       this.craft.setGame(g);
       this.map.setGame(g);
+      this.journal.setGame(g);
       this.input.setGame(g);
       (this.input as any).r = this.r;
     }
@@ -153,6 +158,7 @@ class App {
       return;
     }
     if (this.map.shown) return this.map.toggle(false);
+    if (this.journal.shown) return this.journal.toggle(false);
     if (this.craft.close()) return;
     if (g.openContainer !== null) return g.queue({ t: 'closeContainer' });
     if (g.player.player!.placing) return g.queue({ t: 'cancelPlace' });
@@ -185,7 +191,7 @@ class App {
     const g = this.g;
     const r = this.r;
     if (!g || !r) return;
-    const running = !this.menus.anyOpen() && !this.map.shown;
+    const running = !this.menus.anyOpen() && !this.map.shown && !this.journal.shown;
     const asleep = g.player.state?.name === 'sleep';
     if (running) {
       this.acc += dt * (asleep ? 12 : 1);

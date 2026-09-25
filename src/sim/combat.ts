@@ -66,6 +66,7 @@ export function updateAttack(g: Game, e: Entity): void {
   if (g.time - s.t0 < attackTiming(e).hit) return;
   s.data.hit = true;
   const target = g.world.get(s.data.target);
+  if (hasTag(prefab(e.prefab), 'giant')) return giantSlam(g, e, target);
   if (!isAlive(g, target)) return;
   const reach = (e.combat?.range ?? 1) + (prefab(target.prefab).radius ?? 0.3) + 0.6;
   if (dist(e.x, e.y, target.x, target.y) > reach) {
@@ -87,6 +88,28 @@ export function updateAttack(g: Game, e: Entity): void {
     }
   }
   damage(g, target, dmg, e);
+}
+
+/** Giants hit everything in an arc in front of them and flatten structures. */
+function giantSlam(g: Game, e: Entity, target: Entity | undefined): void {
+  const fx = e.x + (e.facing ?? 1) * 2.2;
+  const fy = e.y;
+  g.events.emit('fx', { kind: 'slam', x: fx, y: fy });
+  g.sfx('slam', fx, fy);
+  const victims = g.world.spatial.inRadius(fx, fy, 3.2, (o) => o !== e && !o.item && (!!o.health || hasTag(prefab(o.prefab), 'structure')));
+  if (target && !victims.includes(target) && dist(e.x, e.y, target.x, target.y) < 4.5) victims.push(target);
+  for (const o of victims) {
+    const def = prefab(o.prefab);
+    if (def.structure && !o.locomotor) {
+      // collapse like a hammer blow
+      dropLoot(g, def.hammerLoot, o.x, o.y);
+      if (o.container) for (const st of o.container.slots) if (st) dropStack(g, st, o.x, o.y, 1.4);
+      g.events.emit('fx', { kind: 'collapse', x: o.x, y: o.y });
+      g.world.remove(o);
+      continue;
+    }
+    if (o.health && !isDead(o)) damage(g, o, attackDamage(e) * (o.player ? 1 : 2), e);
+  }
 }
 
 /** Apply damage with armor absorption, hit reactions, aggro and death. */

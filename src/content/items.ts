@@ -26,6 +26,7 @@ const resources: ItemDef[] = [
   { id: 'manure', name: 'Manure', stack: 20, fuel: 90, tags: ['fertilizer'], desc: 'The circle of life.' },
   { id: 'rot', name: 'Rot', stack: 40, fuel: 30, tags: ['fertilizer'], desc: 'It was food once.' },
   { id: 'nightmarefuel', name: 'Dread Essence', stack: 40, fuel: 90, desc: 'It squirms when I look away.' },
+  { id: 'frostheart', name: 'Frost Heart', stack: 1, tags: ['coolant'], desc: 'Still cold. Still beating, a little.' },
   { id: 'rabbit', name: 'Rabbit', stack: 5, desc: 'Cute. Wriggly. Dinner?' },
 ];
 

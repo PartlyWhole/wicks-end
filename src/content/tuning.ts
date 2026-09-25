@@ -141,7 +141,7 @@ export const T = {
     autumn: [32, 24, 12],
     winter: [8, -6, 6],
     spring: [12, 22, 34],
-    summer: [45, 62, 48],
+    summer: [52, 74, 56],
   } as Record<string, [number, number, number]>,
   NIGHT_TEMP_DROP: 12,
   /** chance of rain starting per game-hour-ish (see weather system) */

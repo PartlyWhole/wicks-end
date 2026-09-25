@@ -425,6 +425,52 @@ function shadowCreature(ctx: Ctx, e: Entity, p: ActorPose, beak: boolean, solid:
   ctx.restore();
 }
 
+function frostmaw(ctx: Ctx, e: Entity, p: ActorPose): void {
+  const rng = rngFor(e);
+  const step = p.moving ? Math.sin(p.time * 4) : 0;
+  const slam = p.state === 'attack' ? Math.sin(Math.min(1, p.t / 0.6) * Math.PI) : 0;
+  groundShadow(ctx, 0, 0.1, 2.6, 0.6, 0.35);
+  // legs
+  for (const x of [-0.9, 0.9]) {
+    const sw = step * (x > 0 ? 1 : -1) * 0.3;
+    line(ctx, [[x, -2.2], [x + sw, -1.0], [x + sw * 1.4, 0]], 0.55, '#b9c4cc');
+    line(ctx, [[x + sw * 1.4 - 0.35, 0], [x + sw * 1.4 + 0.45, 0]], 0.3, '#3a3a44');
+  }
+  ctx.save();
+  ctx.translate(0, -Math.abs(step) * 0.15 + slam * 0.4);
+  // shaggy hunched body
+  blob(ctx, 0, -3.6, 1.9, 1.9, '#dfe6ea', rng, 0.12, 0.1, 16);
+  for (let i = 0; i < 18; i++) {
+    const a = rng.range(Math.PI * 0.9, Math.PI * 2.1);
+    const r = rng.range(1.2, 1.8);
+    line(ctx, [[Math.cos(a) * r, -3.6 + Math.sin(a) * r], [Math.cos(a) * (r + 0.45), -3.3 + Math.sin(a) * (r + 0.3)]], 0.09, '#b0bcc6');
+  }
+  // arms (slam)
+  const armA = -0.4 - slam * 1.8;
+  for (const side of [-1, 1]) {
+    ctx.save();
+    ctx.translate(side * 1.5, -4.2);
+    ctx.rotate(side > 0 ? -armA : armA * -1);
+    line(ctx, [[0, 0], [side * 0.3, 1.3], [side * 0.2, 2.6]], 0.5, '#cfd8de');
+    for (let k = -1; k <= 1; k++) line(ctx, [[side * 0.2, 2.6], [side * 0.2 + k * 0.2, 3.0]], 0.12, '#2a2a30');
+    ctx.restore();
+  }
+  // head with one great eye and antlers
+  blob(ctx, 0.9, -5.4, 0.95, 0.8, '#e9eff2', rng, 0.12, 0.08);
+  for (const side of [-1, 1]) {
+    line(ctx, [[0.9 + side * 0.5, -6.0], [0.9 + side * 1.0, -6.9], [0.9 + side * 1.6, -7.1]], 0.16, '#6a5a4a');
+    line(ctx, [[0.9 + side * 0.85, -6.6], [0.9 + side * 0.6, -7.3]], 0.12, '#6a5a4a');
+  }
+  circle(ctx, 1.2, -5.45, 0.42, '#f4f0dc', 0.08);
+  circle(ctx, 1.28, -5.45, 0.2, p.state === 'attack' ? '#e0302a' : '#3a70c0', 0.04);
+  circle(ctx, 1.32, -5.5, 0.08, INK, 0);
+  // maw
+  polyPath(ctx, [[0.6, -4.95], [1.7, -4.9], [1.5, -4.6], [0.8, -4.65]]);
+  inked(ctx, '#3a1a1a', 0.07);
+  for (let i = 0; i < 4; i++) polyPath(ctx, [[0.8 + i * 0.22, -4.93], [0.9 + i * 0.22, -4.75], [1.0 + i * 0.22, -4.93]]), inked(ctx, '#f4f0e0', 0.03);
+  ctx.restore();
+}
+
 function smoothPath2(ctx: Ctx, cx: number, cy: number, rx: number, ry: number, rng: Rng): void {
   ctx.beginPath();
   const n = 12;
@@ -463,5 +509,7 @@ export function drawActor(ctx: Ctx, e: Entity, p: ActorPose, insane: boolean, no
       return shadowCreature(ctx, e, p, false, insane);
     case 'dread_beak':
       return shadowCreature(ctx, e, p, true, insane);
+    case 'frostmaw':
+      return frostmaw(ctx, e, p);
   }
 }

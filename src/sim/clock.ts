@@ -71,7 +71,9 @@ export function computeClock(time: number, lengths: Record<string, number>): Clo
   else light = Math.max(lerp(0.5, 0, smoothstep(duskEnd, duskEnd + 20, tod)), lerp(0, 0.35, smoothstep(T.DAY - 20, T.DAY, tod)));
 
   const nightness = phase === 'night' ? 1 : phase === 'dusk' ? 0.4 : clamp(1 - tod / 60, 0, 0.6);
-  const ambient = seasonTemp(season, p) - T.NIGHT_TEMP_DROP * nightness;
+  // warmest in the middle of the day segment
+  const midday = phase === 'day' ? Math.sin(Math.min(1, tod / dayEnd) * Math.PI) * 4 : 0;
+  const ambient = seasonTemp(season, p) - T.NIGHT_TEMP_DROP * nightness + midday;
 
   return { day, tod, frac: tod / T.DAY, phase, segs, season, seasonP: p, seasonDaysLeft: left, light, nightness, ambient };
 }

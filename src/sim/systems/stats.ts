@@ -60,6 +60,7 @@ export function heatAt(g: Game, p: Entity): { heat: number; cold: number } {
     if (hh) heat = Math.max(heat, g.clock.ambient + hh);
   }
   for (const s of p.inventory!.slots) {
+    if (s?.id === 'frostheart') cold = Math.min(cold, 40);
     if (s?.temp === undefined) continue;
     if (s.temp > 30) heat = Math.max(heat, s.temp);
     if (s.temp < 20) cold = Math.min(cold, s.temp);
@@ -164,9 +165,9 @@ export const statsSystem: System = {
     // ---- temperature
     const t = p.temperature!;
     const { heat, cold } = heatAt(g, p);
-    let target = c.ambient - (w.cur / 100) * 10;
+    let target = c.ambient - (w.cur / 100) * 10 - (c.phase === 'day' && inShade(g, p) ? 6 : 0);
     if (heat > target) target = heat;
-    if (cold < target && c.ambient > 25) target = cold;
+    if (cold < target && c.ambient > 25) target = Math.max(cold, target - 25);
     if (pl.foodTemp && g.time < pl.foodTemp.until) target += pl.foodTemp.delta;
     else pl.foodTemp = undefined;
     target = clamp(target, T.TEMP_MIN, T.TEMP_MAX);
@@ -197,6 +198,10 @@ export const statsSystem: System = {
       }
   },
 };
+
+function inShade(g: Game, p: Entity): boolean {
+  return !!g.world.spatial.nearest(p.x, p.y, 2.2, (e) => e.prefab === 'pine_tree' && (e.growable?.stage ?? 0) >= 1);
+}
 
 function sheltered(g: Game, p: Entity): boolean {
   let yes = false;

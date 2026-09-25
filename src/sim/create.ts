@@ -42,6 +42,7 @@ interface SaveData {
   sched: Array<[number, number, string]>;
   weather: Game['weather'];
   hounds: Game['hounds'];
+  giant?: Game['giant'];
   idCounter: number;
   playerId: number;
   roads: number[][];
@@ -73,6 +74,7 @@ export function serialize(g: Game): string {
     sched: g.sched.toJSON(),
     weather: g.weather,
     hounds: g.hounds,
+    giant: g.giant,
     idCounter: g.world.idCounter,
     playerId: g.player.id,
     roads: g.roads,
@@ -94,6 +96,7 @@ export function deserialize(json: string): Game {
   g.sched.load(d.sched);
   Object.assign(g.weather, d.weather);
   Object.assign(g.hounds, d.hounds);
+  if (d.giant) Object.assign(g.giant, d.giant);
   g.player = g.world.get(d.playerId)!;
   g.roads = d.roads ?? [];
   g.clock = computeClock(g.time, g.settings.seasonLengths);

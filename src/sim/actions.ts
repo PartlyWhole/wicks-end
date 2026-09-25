@@ -432,6 +432,7 @@ export const ALT_ACTIONS: Record<string, ActionDef> = {
     test: ({ target }) => !!target,
     run: ({ g, actor, target }) => {
       g.say(actor, examineText(g, target!), true);
+      g.events.emit('discover', { id: target!.item ? target!.item.id : target!.prefab });
     },
   },
 };

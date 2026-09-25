@@ -114,6 +114,14 @@ export class Renderer {
         f.hush = 1;
         f.shake = 0.8;
         break;
+      case 'quake':
+        f.shake = Math.max(f.shake, 0.6);
+        break;
+      case 'slam':
+        f.shake = 1;
+        f.emit('dust', x, y, 14, '#dfe6ea', { z: 0.2 });
+        f.emit('chip', x, y, 10, '#eef4f8', { z: 0.5 });
+        break;
       case 'lightning':
         f.flash = 1;
         f.bolt = { x, y, t: 0 };
@@ -269,7 +277,7 @@ export class Renderer {
     const y0 = this.cam.y - hh;
     const x1 = this.cam.x + hw;
     const y1 = this.cam.y + hh;
-    const budget = { n: 2 };
+    const budget = { n: 1 };
     const chunkPx = CHUNK_UNITS * S;
     for (let cy = Math.floor(y0 / CHUNK_UNITS); cy <= Math.floor(y1 / CHUNK_UNITS); cy++)
       for (let cx = Math.floor(x0 / CHUNK_UNITS); cx <= Math.floor(x1 / CHUNK_UNITS); cx++) {
@@ -278,6 +286,7 @@ export class Renderer {
         const [sx, sy] = this.toScreen(cx * CHUNK_UNITS, cy * CHUNK_UNITS);
         if (c) ctx.drawImage(c, Math.floor(sx), Math.floor(sy), Math.ceil(chunkPx) + 1, Math.ceil(chunkPx) + 1);
       }
+    this.prefetch(x0, y0, x1, y1);
     // snow cover
     if (g.weather.snowCover > 0.02) {
       ctx.fillStyle = `rgba(232,238,242,${g.weather.snowCover * 0.6})`;
@@ -322,6 +331,25 @@ export class Renderer {
     // ---- speech
     this.drawSpeech(alpha);
     ctx.restore();
+  }
+
+  private prefetching = false;
+  /** Build chunks around the view during idle time so walking rarely hitches. */
+  private prefetch(x0: number, y0: number, x1: number, y1: number): void {
+    if (this.prefetching) return;
+    const g = this.g;
+    const want: [number, number][] = [];
+    for (let cy = Math.floor(y0 / CHUNK_UNITS) - 1; cy <= Math.floor(y1 / CHUNK_UNITS) + 1; cy++)
+      for (let cx = Math.floor(x0 / CHUNK_UNITS) - 1; cx <= Math.floor(x1 / CHUNK_UNITS) + 1; cx++)
+        if (cx >= 0 && cy >= 0 && cx * CHUNK_UNITS < g.worldSize && cy * CHUNK_UNITS < g.worldSize && !this.ground.has(cx, cy)) want.push([cx, cy]);
+    if (!want.length) return;
+    this.prefetching = true;
+    const idle = (window as any).requestIdleCallback ?? ((f: () => void) => setTimeout(f, 50));
+    idle(() => {
+      const [cx, cy] = want[0];
+      this.ground.get(cx, cy, { n: 1 });
+      this.prefetching = false;
+    });
   }
 
   private blitSprite(spr: Sprite, sx: number, sy: number, skew = 0): void {

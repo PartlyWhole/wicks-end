@@ -33,6 +33,8 @@ export interface SimEvents extends Record<string, unknown> {
   openContainer: { id: number | null };
   inv: {};
   autosave: {};
+  /** something was examined/encountered: a prefab or item id */
+  discover: { id: string };
 }
 
 export interface GameSettings {
@@ -64,6 +66,7 @@ export class Game {
   settings: GameSettings;
   weather = { precip: 0, raining: false, snowCover: 0, nextRoll: 0, lightningAt: 0, rainStart: 0, rainEnd: 0 };
   hounds = { nextAt: 0, warnFrom: 0, toSpawn: 0, spawnAt: 0, warned: 0 };
+  giant = { year: -1, warnAt: 0, spawnAt: 0, warned: 0, id: 0 };
   /** per-system accumulated time */
   private acc = new Map<System, number>();
   private systems: System[] = [];

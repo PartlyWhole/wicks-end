@@ -33,6 +33,8 @@ export const SAY = {
   firstDay: ['Where... am I? I should find some food before dark.'],
   hogFriend: ['A friend! A snouty friend.'],
   cantDoThat: ['I can’t do that.'],
+  giantWarn: ['The ground is shaking...', 'Something enormous is coming.', 'What was THAT?'],
+  giantHere: ['Run! Or... fight?'],
 };
 
 export type SayKey = keyof typeof SAY;
@@ -43,6 +45,7 @@ export const DEATH_CAUSES: Record<string, string> = {
   freezing: 'Freezing',
   overheating: 'Overheating',
   fire: 'Fire',
+  frostmaw: 'Frostmaw',
   food: 'Bad food',
 };
 

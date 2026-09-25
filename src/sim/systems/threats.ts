@@ -66,6 +66,40 @@ export const threatSystem: System = {
       h.spawnAt = g.time + g.rng.range(3, 8);
     }
 
+    // ---------------- Frostmaw: once per winter, mid-season, telegraphed by roars
+    const G = g.giant;
+    const year = Math.floor(g.clock.day / Object.values(g.settings.seasonLengths).reduce((a, b) => a + b, 0));
+    if (g.clock.season === 'winter' && G.year !== year && g.clock.seasonP > 0.3 && g.clock.seasonP < 0.7 && g.clock.phase === 'day') {
+      if (!G.warnAt) {
+        G.warnAt = g.time;
+        G.spawnAt = g.time + 50;
+        G.warned = 0;
+      }
+      if (g.time - G.warned > 12 && g.time < G.spawnAt) {
+        G.warned = g.time;
+        g.sfx('roar', p.x, p.y, Math.round((1 - (G.spawnAt - g.time) / 50) * 100));
+        g.events.emit('fx', { kind: 'quake', x: p.x, y: p.y });
+        g.say(p, 'giantWarn');
+      }
+      if (g.time >= G.spawnAt) {
+        const pt = spawnPointNear(g, p.x, p.y, 22);
+        if (pt) {
+          const e = spawn(g, 'frostmaw', pt[0], pt[1], { ttl: g.time + T.DAY * 1.5 });
+          G.id = e.id;
+          G.year = year;
+          G.warnAt = 0;
+          g.say(p, 'giantHere');
+          g.sfx('roar', pt[0], pt[1], 100);
+        }
+      }
+    }
+    // the giant leaves when winter ends
+    if (g.clock.season !== 'winter' && G.id) {
+      const e = g.world.get(G.id);
+      if (e && !e.ttl) g.world.set(e, 'ttl', g.time + 3);
+      G.id = 0;
+    }
+
     // ---------------- shadow creatures while insane
     const s = p.sanity!;
     const shadows = [...g.world.query('shadow')];

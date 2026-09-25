@@ -8,6 +8,7 @@ import { stackLabel } from '../ui/inventory';
 
 export interface InputHooks {
   toggleMap(): void;
+  toggleJournal(): void;
   escape(): void;
   isBlocked(): boolean;
 }
@@ -69,6 +70,7 @@ export class Input {
     if (this.hooks.isBlocked()) return;
     if (k === 'tab') e.preventDefault();
     if (down && (k === 'm' || k === 'tab') && !e.repeat) this.hooks.toggleMap();
+    if (down && k === 'j' && !e.repeat) this.hooks.toggleJournal();
     if (down) this.keys.add(k);
     else this.keys.delete(k);
     if (['w', 'a', 's', 'd', 'arrowup', 'arrowdown', 'arrowleft', 'arrowright'].includes(k)) {
