@@ -57,13 +57,25 @@ if (!twoLayer) warnings.push('missing <g id="silhouette"> and/or <g id="colour">
 
 const esc = (s) => s.replace(/&/g, '&amp;').replace(/"/g, '&quot;');
 const UNLIT = '#colour{display:none}';
-const frame = (t, w, h, extra = '', css = '') =>
+const frame = (t, w, h, extra = '', css = '', src = svgText) =>
   `<iframe data-t="${t}" style="width:${w}px;height:${h}px;border:0;background:transparent;${extra}" srcdoc="${esc(
-    `<!doctype html><html><head><style>${css}</style></head><body style="margin:0;background:transparent;overflow:hidden"><div style="width:${w}px;height:${h}px">${svgText.replace(
+    `<!doctype html><html><head><style>${css}</style></head><body style="margin:0;background:transparent;overflow:hidden"><div style="width:${w}px;height:${h}px">${src.replace(
       /<svg\b/,
       '<svg style="width:100%;height:100%;display:block"',
     )}</div></body></html>`,
   )}"></iframe>`;
+
+// World scale: every 256 box is drawn at the same world size unless the root declares
+// data-world-scale="k" (the box then spans k × the standard box in world units; see STYLE.md §1.1).
+// Game-scale cells size the sprite by k and, for non-Silas assets, stand Silas beside it for reference.
+const worldScale = +(/<svg\b[^>]*\bdata-world-scale="([\d.]+)"/.exec(svgText)?.[1] ?? 1) || 1;
+const G = Math.round(64 * worldScale);
+const groundAlign = `margin-bottom:${(-(G - 64) * 24 / 256).toFixed(1)}px`; // keep y=232 contact on the shared ground line
+const gameW = Math.max(220, 2 * G + 34);
+let refSvg = null;
+if (!/^silas-/.test(name)) {
+  try { refSvg = readFileSync(new URL('../assets/silas-idle.svg', import.meta.url), 'utf8'); } catch {}
+}
 
 const ts = Array.from({ length: N }, (_, i) => +((i / N) * duration).toFixed(3));
 const cell = (label, inner, bg = '#e9dfc7') =>
@@ -81,8 +93,8 @@ const sheet = `<!doctype html><html><head><style>
   ${cell('onion skin (all frames, lit)', `<div class="stack" style="width:220px;height:220px">${ts.map((t) => frame(t, 220, 220, `opacity:${Math.max(0.18, 1 / N + 0.1)}`)).join('')}</div>`)}
   ${cell('UNLIT · night outside the lamp', frame(ts[0], 220, 220, '', UNLIT), '#2a2340')}
   ${cell('solid silhouette', `<div style="filter:brightness(0)">${frame(ts[0], 220, 220)}</div>`, '#d8d0bc')}
-  ${cell('game scale · day (lit)', `<div style="width:220px;height:220px;display:flex;align-items:flex-end;justify-content:center;gap:6px;padding-bottom:70px;box-sizing:border-box;background:radial-gradient(#b8ae84,#7a7d55)">${frame(ts[0], 64, 64)}${frame(ts[Math.floor(N / 2)], 48, 48)}</div>`, '#7a7d55')}
-  ${cell('game scale · night: lit | unlit', `<div style="width:220px;height:220px;display:flex;align-items:center;justify-content:center;gap:14px;background:radial-gradient(circle at 30% 55%, #f2a94a 0%, #b4574a 22%, #2a2340 45%, #0b0907 80%)">${frame(ts[0], 64, 64)}${frame(ts[0], 64, 64, '', UNLIT)}</div>`, '#0b0907')}
+  ${cell(`game scale · day (lit)${refSvg ? ' · Silas for scale' : ''}`, `<div style="width:${gameW}px;height:220px;display:flex;align-items:flex-end;justify-content:center;gap:6px;padding-bottom:70px;box-sizing:border-box;background:radial-gradient(#b8ae84,#7a7d55)">${frame(ts[0], G, G, groundAlign)}${refSvg ? frame(0, 64, 64, '', '', refSvg) : frame(ts[Math.floor(N / 2)], 48, 48)}</div>`, '#7a7d55')}
+  ${cell('game scale · night: lit | unlit', `<div style="width:${gameW}px;height:220px;display:flex;align-items:center;justify-content:center;gap:14px;background:radial-gradient(circle at 30% 55%, #f2a94a 0%, #b4574a 22%, #2a2340 45%, #0b0907 80%)">${frame(ts[0], G, G)}${frame(ts[0], G, G, '', UNLIT)}</div>`, '#0b0907')}
 </div>
 <div class="row">${cell('hero · lit (detail & cut quality)', frame(ts[Math.min(1, N - 1)], 460, 460))}${cell('hero · unlit', frame(ts[Math.min(1, N - 1)], 300, 300, '', UNLIT), '#2a2340')}</div>
 </body></html>`;
@@ -155,7 +167,7 @@ try {
     }
     rmSync(tmp, { recursive: true, force: true });
   }
-  const report = { file, twoLayer, sheet: sheetPath, gif: gifPath, animated, duration, frames: N, bytes: svgText.length, elements, warnings, errors };
+  const report = { file, twoLayer, sheet: sheetPath, gif: gifPath, animated, duration, worldScale, frames: N, bytes: svgText.length, elements, warnings, errors };
   writeFileSync(join(outDir, `${name}.report.json`), JSON.stringify(report, null, 2));
   console.log(JSON.stringify(report, null, 2));
 } finally {

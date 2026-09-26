@@ -10,6 +10,19 @@ Influences: Lotte Reiniger silhouette animation, magic-lantern and phantasmagori
 - Fully self-contained: no `<script>`, `<image>`, external fonts or URLs. Aim for under 25 KB. Use no blur or turbulence filters on sprites; soft edges belong only to light, fog and phantasms.
 - **No background.** Sprites are transparent; the harness supplies grounds.
 
+### 1.1 World scale (one world, one ruler)
+Every sprite lives in the same human-scale world, so "fill 60–85% of the box" is about composition, not size. The ruler is **Silas: 190 px tall in a standard 256 box** (world scale 1). Target heights relative to Silas:
+
+| Subject | × Silas | Notes |
+|---|---|---|
+| Trees (pine, dead oak) | 1.8–2.2 | a grown tree must tower over a man |
+| Silas, humans | 1.0 | 190 px in the box |
+| Shadow creatures | 0.9–1.4 | wrong, but not giants |
+| Hogfolk | 0.6–0.7 | round, waist-to-chest high |
+| Campfire | 0.35 | ~70 px |
+
+An asset that is bigger than a person in the world may still draw to fill its own box, and declares how big that box is on the root: `data-world-scale="k"` means the 256 box spans **k × the standard box** in world units (the engine and the harness multiply its on-screen size by k, anchored on the y = 232 contact). Choose k = target height ÷ drawn height in the box (e.g. a 229 px pine at 2.1× Silas → k = 399 / 229 ≈ 1.75). Assets without the attribute are k = 1 and must be drawn at their world height. The harness's game-scale cells apply k and stand Silas beside non-Silas sprites for reference.
+
 ## 2. The two-layer sprite (the core rule)
 Every sprite has exactly two top-level layers, **in this order**:
 
