@@ -11,8 +11,19 @@ import { Fx } from './fx';
 import { getSprite, staticSprite, type Sprite } from './sprites/static';
 import { drawActor } from './sprites/actors';
 import { iconCanvas } from './icons';
+import { SvgSprites } from './svgsprites';
+import { lightAt } from '../sim/light';
 
-const FLAT = new Set(['pond', 'rabbit_hole', 'farm_plot', 'grave_mound', 'campfire', 'firepit']);
+const FLAT = new Set(['pond', 'rabbit_hole', 'farm_plot', 'grave_mound', 'firepit']);
+
+/** a baked Magic-Lantern sprite chosen for an entity this frame */
+interface SvgPick {
+  id: string;
+  frame: number;
+  scale?: number;
+  rotate?: number;
+  alpha?: number;
+}
 
 interface Speech {
   id: number;
@@ -25,6 +36,7 @@ export class Renderer {
   readonly ctx: CanvasRenderingContext2D;
   readonly ground: GroundRenderer;
   readonly fx = new Fx();
+  readonly svg = new SvgSprites();
   cam = { x: 0, y: 0, view: 46 };
   scale = 20;
   W = 0;
@@ -204,6 +216,42 @@ export class Renderer {
     }
   }
 
+  /** Which baked sprite (if any) represents this entity right now. */
+  svgFor(e: Entity): SvgPick | null {
+    const g = this.g;
+    const sv = this.svg;
+    const t = this.clockTime + e.id * 0.37; // desync idles
+    const st = e.state?.name ?? 'idle';
+    const since = g.time - (e.state?.t0 ?? 0);
+    const pick = (id: string, frame: number, extra: Partial<SvgPick> = {}): SvgPick | null => (sv.has(id) ? { id, frame, ...extra } : null);
+    switch (e.prefab) {
+      case 'player': {
+        if (st === 'dead' || st === 'sleep') return pick('silas-idle', 0, { rotate: -Math.PI / 2 });
+        if (st === 'work' || st === 'attack' || st === 'build') {
+          const dur = e.state?.until !== undefined ? Math.max(0.2, e.state.until - e.state.t0) : 0.55;
+          return pick('silas-chop', sv.frameOnce('silas-chop', since, dur));
+        }
+        const moving = st === 'walk' || !!(e.locomotor && (e.locomotor.vx || e.locomotor.vy));
+        return moving ? pick('silas-walk', sv.frameAt('silas-walk', this.clockTime)) : pick('silas-idle', sv.frameAt('silas-idle', t));
+      }
+      case 'hog': {
+        const moving = st === 'walk' || !!(e.locomotor && (e.locomotor.vx || e.locomotor.vy));
+        if (st === 'dead') return pick('hog-walk', 0, { rotate: Math.PI / 2 });
+        return pick('hog-walk', moving ? sv.frameAt('hog-walk', t) : 0);
+      }
+      case 'campfire':
+        return pick('campfire', sv.frameAt('campfire', t));
+      case 'pine_tree':
+        return pick('pine-tree', sv.frameAt('pine-tree', t), { scale: [0.5, 0.78, 1][e.growable?.stage ?? 1] });
+      case 'crawling_dread':
+      case 'dread_beak': {
+        const alpha = (g.player.sanity?.insane ? 0.92 : 0.3) * (st === 'dead' ? clamp(1 - since / T.CORPSE_TIME, 0, 1) : 1) * (e.ttl ? clamp((e.ttl - g.time) / 2, 0, 1) : 1);
+        return pick('shadow-puppet', sv.frameAt('shadow-puppet', t), { scale: e.prefab === 'dread_beak' ? 1.25 : 1, alpha });
+      }
+    }
+    return null;
+  }
+
   private sprite(e: Entity): Sprite | null {
     const k = this.spriteKey(e);
     return k ? getSprite(k, () => staticSprite(k)) : null;
@@ -223,7 +271,8 @@ export class Renderer {
         score += 100; // items on top
       } else {
         const def = PREFABS.get(e.prefab)!;
-        const spr = this.sprite(e);
+        const sv = this.svgFor(e);
+        const spr = sv ? { box: this.svg.box(sv.id, sv.scale) } : this.sprite(e);
         const size = def.size ?? 1.5;
         if (spr) {
           const [l, t, w, h] = spr.box;
@@ -382,6 +431,42 @@ export class Renderer {
       ctx.restore();
       ctx.drawImage(icon, sx - s / 2, sy - s * 0.95, s, s);
       if (hover) this.highlight(icon, sx - s / 2, sy - s * 0.95, s, s);
+      return;
+    }
+
+    // baked Magic-Lantern sprite: silhouette always, colour revealed by local light
+    const sv = this.svgFor(e);
+    if (sv) {
+      const shakeT = (this.shakeUntil.get(e.id) ?? 0) - this.clockTime;
+      if (shakeT > 0) sx += Math.sin(shakeT * 80) * 0.08 * S;
+      const [, , bw] = this.svg.box(sv.id, sv.scale);
+      if (!sv.rotate) {
+        ctx.save();
+        ctx.globalAlpha = 0.22 * (sv.alpha ?? 1);
+        ctx.fillStyle = '#000';
+        ctx.beginPath();
+        ctx.ellipse(sx, sy, bw * 0.22 * S, bw * 0.05 * S, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      }
+      const lit = clamp((lightAt(g, wx, wy) - 0.04) / 0.55, 0, 1);
+      const burning = e.burnable?.burning;
+      if (burning) {
+        const total = (prefab(e.prefab).burnable?.time ?? 6) * 1.1;
+        const k = clamp(1 - ((e.burnable!.until ?? g.time) - g.time) / total, 0, 1);
+        ctx.save();
+        ctx.filter = `brightness(${1 - 0.75 * k}) saturate(${1 - 0.8 * k})`;
+      }
+      this.svg.draw(ctx, sv.id, sv.frame, sx, sy, S, { scale: sv.scale, facing: e.facing ?? 1, colour: lit, glow: flash ? 0.5 : hover ? 0.18 : 0, alpha: sv.alpha, rotate: sv.rotate });
+      if (burning) {
+        ctx.restore();
+        const size = PREFABS.get(e.prefab)?.size ?? 2;
+        this.drawFlame(sx, sy - size * 0.25 * S, 0.5 + size * 0.28, e.id);
+        this.drawFlame(sx + 0.4 * S, sy - size * 0.5 * S, 0.3 + size * 0.2, e.id + 3);
+        if (Math.random() < 0.3) this.fx.emit('smoke', e.x, e.y, 1, '#3a342e', { z: size * 0.9 });
+      } else if (e.burnable?.smolderUntil && Math.random() < 0.2) this.fx.emit('smoke', e.x, e.y, 1, '#8a827a', { z: 0.6 });
+      if (e.fueled && fireLevel(e) >= 0 && Math.random() < 0.08) this.fx.emit('ember', e.x, e.y, 1, '#ffb04a', { z: 1.2 });
+      if (e.state?.name === 'sleep' && Math.random() < 0.02) this.fx.emit('zzz', e.x + 0.4, e.y, 1, '#f4efe4', { z: 1.6 });
       return;
     }
 
@@ -603,7 +688,8 @@ export class Renderer {
     const lh = this.light.height;
     l.globalCompositeOperation = 'source-over';
     l.clearRect(0, 0, lw, lh);
-    l.fillStyle = c.phase === 'dusk' ? `rgba(30,20,40,${dark * 0.9})` : `rgba(4,5,12,${Math.min(1, dark * 1.02)})`;
+    // Magic-Lantern night: a deep indigo veil, not pure black, so ink silhouettes still read outside the lamp
+    l.fillStyle = c.phase === 'dusk' ? `rgba(34,26,52,${dark * 0.9})` : `rgba(24,19,42,${Math.min(0.9, dark * 0.92)})`;
     l.fillRect(0, 0, lw, lh);
     l.globalCompositeOperation = 'destination-out';
     const S = this.scale / 2;

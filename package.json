@@ -8,7 +8,8 @@
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview",
     "test": "vitest run",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "bake": "node art/tools/bake.mjs"
   },
   "devDependencies": {
     "@types/node": "^26.6.2",

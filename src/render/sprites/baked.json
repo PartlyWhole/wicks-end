@@ -1,0 +1,58 @@
+{
+  "campfire": {
+    "frames": 53,
+    "fps": 24,
+    "cols": 8,
+    "size": 256,
+    "worldScale": 1,
+    "duration": 2.2
+  },
+  "hog-walk": {
+    "frames": 10,
+    "fps": 12,
+    "cols": 8,
+    "size": 256,
+    "worldScale": 1,
+    "duration": 0.833
+  },
+  "pine-tree": {
+    "frames": 29,
+    "fps": 12,
+    "cols": 8,
+    "size": 256,
+    "worldScale": 1.75,
+    "duration": 2.4
+  },
+  "shadow-puppet": {
+    "frames": 58,
+    "fps": 24,
+    "cols": 8,
+    "size": 256,
+    "worldScale": 1,
+    "duration": 2.4
+  },
+  "silas-chop": {
+    "frames": 12,
+    "fps": 12,
+    "cols": 8,
+    "size": 256,
+    "worldScale": 1,
+    "duration": 1
+  },
+  "silas-idle": {
+    "frames": 29,
+    "fps": 12,
+    "cols": 8,
+    "size": 256,
+    "worldScale": 1,
+    "duration": 2.4
+  },
+  "silas-walk": {
+    "frames": 12,
+    "fps": 12,
+    "cols": 8,
+    "size": 256,
+    "worldScale": 1,
+    "duration": 1
+  }
+}

@@ -108,6 +108,14 @@ Each phase ends with a **verification gate**: tests green plus a manual or brows
 - ☑ Independent code review (subagent): 8 bugs found and fixed with regression tests (34 tests total)
 - ☑ Final deploy + smoke test on github.io
 
+## Phase 13 — Magic-Lantern Gothic art (v1)
+- ☑ Art direction research & decision (knowledge-base/09); style guide `art/STYLE.md` (two-layer sprites)
+- ☑ svg-art workflow: 2 runs (~85 agents); no asset reached the 8/10 bar (final ≈6–7), accepted as v1
+- ☑ `npm run bake`: SVG → silhouette + colour sprite sheets (12 fps puppets, 24 fps light/shadow) in `public/sprites`
+- ☑ In game: Silas (idle/walk/chop), hogfolk, pine trees, campfire, shadow creatures use baked sprites; colour revealed by local light; indigo night veil so silhouettes read outside the lamp
+- ☐ Remaining sprites still procedural (bushes, rocks, grass, structures, other mobs) — style mismatch until redrawn
+- ☐ Equipment not shown on the new Silas (hats, held tools other than the chop axe)
+
 ## Deferred / next ideas
 - Multiplayer (host-authoritative over WebRTC; sim is already command-driven and headless)
 - Caves & ruins, boats, more seasonal giants (spring/summer/autumn)
@@ -126,6 +134,7 @@ Each phase ends with a **verification gate**: tests green plus a manual or brows
 | 2026-09-24 | Phase 0 gate: deployed to https://partlywhole.github.io/wicks-end/ (Actions: tests → build → Pages). |
 | 2026-09-24 | Browser playtest round 1: fixed dark dawn (Hush at spawn!), stuck mobs (steering), stale UI refresh timer, blocky roads, hound-like shadow art, cookpot always glowing, summer too mild. |
 | 2026-09-24 | Code review subagent: fixed stale-action crash, item loss into destroyed containers, backpack-as-fuel deletion, dryer/cookpot exploits, backpack spoilage freeze, sleeping in darkness, spawner drift. |
+| 2026-09-25 | Magic-Lantern v1 art integrated (baked two-layer sprites, light reveals colour). |
 | 2026-09-24 | Responsive inventory, title backdrop, work/danger music, fire charring. Final deploy. |
 | 2026-09-24 | Design review vs KB 08 principles: added seasonal giant (late-game pressure, #7/#9), Journal (#16). 24 tests green. |
 | 2026-09-24 | Presentation layer written (ink sprites, icons, ground chunks, lighting, fx, DOM HUD/inventory/crafting/map/menus, WebAudio). Typecheck clean. Starting browser verification. |

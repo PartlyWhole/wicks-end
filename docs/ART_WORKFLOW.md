@@ -45,6 +45,12 @@ The workflow is saved at `/Users/alan/DontStarveClone/.claude/workflows/svg-art.
 **Cost:** per asset, 1 author, up to 3 critics and up to 2 revisers. Add 1 director, up to 2 agents per flagged asset, and 1 gallery agent. Three assets come to about 20–25 agents; a single asset with `harmonize: false` is 3–6 agents.
 
 ## Using the art in the game
-The game currently draws procedurally on Canvas 2D. To use the SVGs:
-- **Static sprites:** rasterize each SVG once at load (`new Image()` with a data URL, drawn into an offscreen canvas at 40 px per world unit). The renderer then blits the cached canvas exactly as it does today.
-- **Animated sprites:** pre-bake N frames per loop with the same pause-at-time technique `render.mjs` uses, into a sprite sheet, and pick a frame by the entity's state time.
+`npm run bake` (`art/tools/bake.mjs`) renders every `art/assets/*.svg` into two transparent WebP sprite sheets in `public/sprites/`:
+- `<id>.sil.webp`: the `#silhouette` layer;
+- `<id>.col.webp`: the `#colour` layer.
+
+It also writes the frame metadata to `src/render/sprites/baked.json`. Puppets are sampled at 12 fps; the campfire and shadow puppet at 24 fps (smooth light and shadow).
+
+At runtime `src/render/svgsprites.ts` draws the silhouette, then the colour layer with alpha set by `lightAt()` at the sprite. The world is therefore ink in the dark and projected into colour by lamplight. `Renderer.svgFor()` maps entities and states to clips: player idle, walk and chop; hog; pine by growth stage; campfire; shadow creatures. Anything without a baked sprite falls back to the procedural art.
+
+Re-run `npm run bake` after editing any asset, and commit `public/sprites` along with the SVGs.
