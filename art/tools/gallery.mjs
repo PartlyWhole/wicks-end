@@ -13,9 +13,12 @@ const dir = resolve('art/assets');
 const files = readdirSync(dir).filter((f) => f.endsWith('.svg')).sort();
 const cards = files
   .map((f) => {
-    const svg = readFileSync(join(dir, f), 'utf8').replace(/<svg\b/, '<svg style="width:100%;height:100%"');
+    const svg = readFileSync(join(dir, f), 'utf8').replace(/<svg\b/, '<svg style="width:100%;height:100%;display:block"');
     const id = f.replace(/\.svg$/, '');
-    return `<figure><div class="day">${svg}</div><div class="night">${svg}</div><figcaption>${id}</figcaption></figure>`;
+    // each sprite in its own iframe so SVG ids (clipPaths, gradients) can't collide between assets
+    const esc = (x) => x.replace(/&/g, '&amp;').replace(/"/g, '&quot;');
+    const fr = (css) => `<iframe style="width:100%;height:100%;border:0;display:block" srcdoc="${esc(`<!doctype html><html><head><style>html,body{margin:0;height:100%;background:transparent}${css}</style></head><body>${svg}</body></html>`)}"></iframe>`;
+    return `<figure><div class="day">${fr('')}</div><div class="night">${fr('#colour{display:none}')}</div><figcaption>${id}</figcaption></figure>`;
   })
   .join('\n');
 const html = `<!doctype html><html><head><meta charset="utf-8"><title>Wick's End — Art Gallery</title>
